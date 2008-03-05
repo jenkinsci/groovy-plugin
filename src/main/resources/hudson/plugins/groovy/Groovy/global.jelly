@@ -1,0 +1,25 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:section title="${%Groovy}">
+    <f:entry title="${%Groovy installation}"
+      description="${%List of Groovy installations on this system.}">
+      <f:repeatable var="groovy" items="${descriptor.installations}">
+        <table width="100%">
+          <f:entry title="${%name}">
+            <input class="setting-input" name="groovy.name"
+              type="text" value="${groovy.name}"/>
+          </f:entry>
+
+          <f:entry title="GROOVY_HOME">
+            <input class="setting-input validated" name="groovy.home"
+              type="text" value="${groovy.home}" />
+          </f:entry>
+          <f:entry title="">
+            <div align="right">
+              <f:repeatableDeleteButton />
+            </div>
+          </f:entry>
+        </table>
+      </f:repeatable>
+    </f:entry>
+  </f:section>
+</j:jelly>
