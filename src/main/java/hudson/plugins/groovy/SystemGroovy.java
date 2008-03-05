@@ -5,6 +5,7 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.remoting.Callable;
 import hudson.tasks.Builder;
 import java.io.IOException;
@@ -31,6 +32,7 @@ public class SystemGroovy extends Builder {
     
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+       Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
        return launcher.getChannel().call(new SystemGroovyCallable( command, listener));
     }
     
