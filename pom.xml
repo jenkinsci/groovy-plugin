@@ -11,9 +11,5 @@
   <artifactId>groovy</artifactId>
   <packaging>hpi</packaging>
   <name>Hudson Groovy builder</name>
-  <version>1.1</version>
-
-  <scm>
-    <tag>groovy-1_1</tag>
-  </scm>
+  <version>1.2-SNAPSHOT</version>
 </project>
