@@ -33,40 +33,24 @@ public class SystemGroovy extends Builder {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-       return launcher.getChannel().call(new SystemGroovyCallable( command, listener));
-    }
-    
-    private static class SystemGroovyCallable implements Callable<Boolean, RuntimeException> {
-        
-        private BuildListener listener;
-        private String command;
-        
-        public SystemGroovyCallable(String command, BuildListener listener) {
-            this.listener = listener;
-            this.command = command;
-        }
-        
-        public Boolean call() throws RuntimeException {
-                    GroovyShell shell = new GroovyShell();
-                    
-                    shell.setVariable("out", listener.getLogger());
-                    Object output = shell.evaluate(command);
-                             
-                    //Check if the script returns something meaningful
-                    if(output instanceof Boolean) {
-                        return (Boolean) output;
-                    } else {
-                        if (output != null) {
-                            listener.getLogger().println("Script returned: "+output);
-                        }
+       
+       GroovyShell shell = new GroovyShell();
 
-                        if (output instanceof Number) {
-                            return ((Number) output).intValue() == 0;
-                        } 
-                    } 
-                    //No output. Suppose success.
-                    return true;
-                }
+        shell.setVariable("out", listener.getLogger());
+        Object output = shell.evaluate(command);
+        if (output instanceof Boolean) {
+            return (Boolean) output;
+        } else {
+            if (output != null) {
+                listener.getLogger().println("Script returned: " + output);
+            }
+            
+            if (output instanceof Number) {
+                return ((Number) output).intValue() == 0;
+            }
+        }
+        //No output. Suppose success.
+        return true;
     }
     
     public Descriptor<Builder> getDescriptor() {
@@ -95,7 +79,7 @@ public class SystemGroovy extends Builder {
 
         @Override
         public String getHelpFile() {
-            return "/plugin/groovy/sytemscript-projectconfig.html";
+            return "/plugin/groovy/systemscript-projectconfig.html";
         }
         
          
