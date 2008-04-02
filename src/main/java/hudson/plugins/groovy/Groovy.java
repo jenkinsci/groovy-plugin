@@ -233,7 +233,7 @@ public class Groovy extends Builder {
 
         private File getExeFile(String execName) {
             if (File.separatorChar == '\\') {
-                execName += ".bat";
+                execName += ".exe";
             }
             return new File(getHome(), "bin/" + execName);
         }
