@@ -8,26 +8,24 @@ import hudson.StructuredForm;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
-import hudson.model.TaskListener;
 import hudson.remoting.Callable;
-import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.Builder;
-import hudson.tasks.CommandInterpreter;
 import hudson.util.NullStream;
-import hudson.util.RemotingDiagnostics;
 import hudson.util.StreamTaskListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.StringTokenizer;
 import net.sf.json.JSONObject;
-import org.apache.tools.ant.taskdefs.FixCRLF;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -46,16 +44,21 @@ public class Groovy extends Builder {
     private String command;
     private String scriptFile;
     private String parameters;
+    private String scriptParameters;
+    private String properties;
 
     /**
      * @stapler-constructor
      */
-    Groovy(BuilderType type, String groovyName, String command, String scriptFile, String parameters) {
+    Groovy(BuilderType type, String groovyName, String command, String scriptFile, 
+            String parameters, String scriptParameters, String properties) {
         this.type = type;
         this.groovyName = groovyName;
         this.command = command;
         this.scriptFile = scriptFile;
         this.parameters = parameters;
+        this.scriptParameters = scriptParameters;
+        this.properties = properties;
     }  
     
 
@@ -90,6 +93,25 @@ public class Groovy extends Builder {
                 
                 for(Map.Entry<String,String> e : build.getBuildVariables().entrySet())
                     envVars.put(e.getKey(),e.getValue());
+                
+                //Pass properties as JAVA_OPTS
+                if(properties != null) {
+                    String origJavaOpts = build.getBuildVariables().get("JAVA_OPTS"); 
+                    StringBuffer javaOpts = new StringBuffer((origJavaOpts != null) ? origJavaOpts : "");
+                    Properties props = new Properties();
+                    try {
+                        props.load(new StringReader(properties));
+                    } catch (NoSuchMethodError err) {
+                        props.load(new ByteArrayInputStream(properties.getBytes()));
+                    }
+
+                    for (Entry<Object,Object> entry : props.entrySet()) {
+                        javaOpts.append(" -D" + entry.getKey() + "=" + entry.getValue());
+                    }
+                    
+                    envVars.put("JAVA_OPTS", javaOpts.toString());
+                 }
+                
                 result = launcher.launch(cmd,envVars,listener.getLogger(),ws).join();
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
@@ -154,8 +176,9 @@ public class Groovy extends Builder {
             String cmd = req.getParameter("groovy.command");
             String file = req.getParameter("groovy.scriptFile");
             String params = req.getParameter("groovy.parameters");
-            
-            return new Groovy(BuilderType.valueOf(selectedType), instName, cmd, file, params);
+            String scriptParams = req.getParameter("groovy.scriptParameters");
+            String props = req.getParameter("groovy.properties");
+            return new Groovy(BuilderType.valueOf(selectedType), instName, cmd, file, params, scriptParams, props);
         }
         
         public static GroovyInstallation getGroovy(String groovyName) {
@@ -248,13 +271,23 @@ public class Groovy extends Builder {
         }
         list.add(cmd);
         
+        //Add groovy parameters
         if(parameters != null) {
-        StringTokenizer tokens = new StringTokenizer(parameters);
-        while(tokens.hasMoreTokens())
-            list.add(tokens.nextToken());    
+            StringTokenizer tokens = new StringTokenizer(parameters);
+            while(tokens.hasMoreTokens()) {
+                list.add(tokens.nextToken());  
+            }
         }
         
         list.add(script.getRemote());
+        
+        //Add script parameters
+        if(scriptParameters != null) {
+            StringTokenizer tokens = new StringTokenizer(scriptParameters);
+            while(tokens.hasMoreTokens()) {
+                list.add(tokens.nextToken());    
+            }
+        }
         
         return list.toArray(new String[] {});
         
@@ -280,7 +313,14 @@ public class Groovy extends Builder {
     public String getParameters() {
         return parameters;
     }
-    
+
+    public String getScriptParameters() {
+        return scriptParameters;
+    }
+
+    public String getProperties() {
+        return properties;
+    }
     
     
     

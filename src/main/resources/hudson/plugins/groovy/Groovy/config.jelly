@@ -8,23 +8,33 @@
         </j:forEach>
       </select>
     </f:entry>
-
-    <f:entry title="Groovy parameters">
-            <input class="setting-input validated" name="groovy.parameters"
-              type="text" value="${instance.parameters}" />
-    </f:entry>
   
-    <f:radioBlock name="groovy.type" value="COMMAND" title="Groovy command" checked='${instance.getType().toString()=="COMMAND"}'>
+    <f:radioBlock name="groovy.type" value="COMMAND" title="Groovy command" 
+        checked='${instance.getType().toString()=="COMMAND"}'>
         <f:entry>
            <f:textarea name="groovy.command" value="${instance.command}"/>       
         </f:entry>
     </f:radioBlock>
 
-    <f:radioBlock name="groovy.type" value="FILE" title="Groovy script file" checked='${instance.getType().toString()=="FILE"}'>
+    <f:radioBlock name="groovy.type" value="FILE" title="Groovy script file" 
+    checked='${instance.getType().toString()=="FILE"}'>
         <f:entry>
              <f:textbox name="groovy.scriptFile" value="${instance.scriptFile}"/>        
         </f:entry>
     </f:radioBlock>
+    
+    <f:advanced>
+        <f:entry title="Groovy parameters">
+            <f:expandableTextbox name="groovy.parameters" type="text" value="${instance.parameters}" />
+        </f:entry>
+        
+        <f:entry title="Script parameters">
+          <f:expandableTextbox name="groovy.scriptParameters" value="${instance.scriptParameters}"/>
+        </f:entry>
+        <f:entry title="${%Properties}">
+            <f:textarea name="groovy.properties" value="${instance.properties}"/>
+        </f:entry>
+  </f:advanced>
            
      
 
