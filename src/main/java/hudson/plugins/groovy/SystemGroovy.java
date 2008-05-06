@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -26,7 +27,8 @@ public class SystemGroovy extends Builder {
      /**
      * @stapler-constructor
      */
-    SystemGroovy(String command) {
+    @DataBoundConstructor
+    public SystemGroovy(String command) {
         this.command = command;
     }  
     
@@ -72,10 +74,9 @@ public class SystemGroovy extends Builder {
         }
         
          @Override
-        public Builder newInstance(StaplerRequest req) throws FormException {
-            String cmd = req.getParameter("groovy.system_command");            
-            return new SystemGroovy(cmd);
-        }
+        public Builder newInstance(StaplerRequest req, JSONObject data) throws FormException {
+              return req.bindJSON(SystemGroovy.class, data);
+         }
 
         @Override
         public String getHelpFile() {

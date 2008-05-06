@@ -2,7 +2,7 @@
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     
     <f:entry title="Groovy command">
-        <f:textarea name="groovy.system_command" value="${instance.command}"/>       
+        <f:textarea name="groovy.command" value="${instance.command}"/>       
     </f:entry>
     
 </j:jelly>
