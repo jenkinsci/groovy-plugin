@@ -1,42 +1,34 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:entry>
     <f:entry title="${%Groovy Version}">
       <select class="setting-input" name="groovy.groovyName">
-        <option value="(Default)">(${%Default})</option>
+        <option value="(Default)">(${%Default})
+        </option>
         <j:forEach var="inst" items="${descriptor.installations}">
-          <f:option selected="${inst.name.equals(instance.groovyName)}" value="${inst.name}">${inst.name}</f:option>
+          <f:option selected="${inst.name.equals(instance.groovyName)}" value="${inst.name}">${inst.name}
+          </f:option>
         </j:forEach>
       </select>
     </f:entry>
-  
-    <f:radioBlock name="groovy.type" value="COMMAND" title="Groovy command" 
-        checked='${instance.getType().toString()=="COMMAND"}'>
-        <f:entry>
-           <f:textarea name="groovy.command" value="${instance.command}"/>       
-        </f:entry>
-    </f:radioBlock>
-
-    <f:radioBlock name="groovy.type" value="FILE" title="Groovy script file" 
-    checked='${instance.getType().toString()=="FILE"}'>
-        <f:entry>
-             <f:textbox name="groovy.scriptFile" value="${instance.scriptFile}"/>        
-        </f:entry>
-    </f:radioBlock>
+    
+    <j:forEach var="d" items="${descriptor.scriptSources}" varStatus="loop">
+      <f:radioBlock name="scriptSource" help="${d.helpFile}" value="${loop.index}"
+        title="${d.displayName}" checked="${instance.scriptSource.descriptor==d}">
+        <st:include from="${d}" page="${d.configPage}" />
+      </f:radioBlock>
+    </j:forEach>
     
     <f:advanced>
-        <f:entry title="Groovy parameters">
-            <f:expandableTextbox name="groovy.parameters" type="text" value="${instance.parameters}" />
-        </f:entry>
-        
-        <f:entry title="Script parameters">
-          <f:expandableTextbox name="groovy.scriptParameters" value="${instance.scriptParameters}"/>
-        </f:entry>
-        <f:entry title="${%Properties}">
-            <f:textarea name="groovy.properties" value="${instance.properties}"/>
-        </f:entry>
-  </f:advanced>
-           
-     
-
-
+      <f:entry title="Groovy parameters">
+        <f:expandableTextbox name="groovy.parameters" type="text" value="${instance.parameters}" />
+      </f:entry>
+      <f:entry title="Script parameters">
+        <f:expandableTextbox name="groovy.scriptParameters" value="${instance.scriptParameters}"/>
+      </f:entry>
+      <f:entry title="${%Properties}">
+        <f:textarea name="groovy.properties" value="${instance.properties}"/>
+      </f:entry>
+    </f:advanced>
+  </f:entry>
 </j:jelly>
