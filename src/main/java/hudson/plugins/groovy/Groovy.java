@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONArray;
@@ -192,6 +193,12 @@ public class Groovy extends Builder {
         //shortcut
         public static DescriptorList<ScriptSource> getScriptSources() {
             return ScriptSource.SOURCES;
+        }
+
+        //Used for grouping radio buttons together
+        private AtomicInteger instanceCounter = new AtomicInteger(0);
+        public int nextInstanceID() {
+          return instanceCounter.incrementAndGet();
         }
     }
 

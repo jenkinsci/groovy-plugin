@@ -12,8 +12,9 @@
       </select>
     </f:entry>
     
+    <j:set var="instanceID" value="${descriptor.nextInstanceID()}" />
     <j:forEach var="d" items="${descriptor.scriptSources}" varStatus="loop">
-      <f:radioBlock name="scriptSource" help="${d.helpFile}" value="${loop.index}"
+      <f:radioBlock name="${instanceID}.scriptSource" help="${d.helpFile}" value="${loop.index}"
         title="${d.displayName}" checked="${instance.scriptSource.descriptor==d}">
         <st:include from="${d}" page="${d.configPage}" />
       </f:radioBlock>
