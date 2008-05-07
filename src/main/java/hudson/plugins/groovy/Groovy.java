@@ -40,16 +40,10 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author dvrzalik
  */
 public class Groovy extends Builder {
-
-    public enum BuilderType { COMMAND,FILE }
     
     public ScriptSource scriptSource;
 
-    private BuilderType type;
-
     private String groovyName;
-    private String command;
-    private String scriptFile;
     private String parameters;
     private String scriptParameters;
     private String properties;
@@ -70,19 +64,14 @@ public class Groovy extends Builder {
         AbstractProject proj = build.getProject();
         FilePath ws = proj.getWorkspace();
         FilePath script = null;
-        if(type == BuilderType.FILE) {
-            script = new FilePath(ws, scriptFile);
-        } else {
-           try {
-                script = ws.createTextTempFile("hudson", ".groovy", command, true);
-            } catch (IOException e) {
-                Util.displayIOException(e,listener);
-                e.printStackTrace( listener.fatalError("Unable to produce a script file") );
-                return false;
-            }
+        try {
+          script = scriptSource.getScriptFile(ws);
+        } catch (IOException e) {
+          Util.displayIOException(e, listener);
+          e.printStackTrace(listener.fatalError("Unable to produce a script file"));
+          return false;
         }
         try {
-
             String[] cmd = buildCommandLine(script);
 
             int result;
@@ -332,6 +321,31 @@ public class Groovy extends Builder {
 
     public String getProperties() {
         return properties;
+    }
+    
+    
+    //---- Backward compatibility -------- //
+    
+    public enum BuilderType { COMMAND,FILE }
+    
+    private BuilderType type;
+    private String command;
+    private String scriptFile;
+    
+    private Object readResolve() {
+        switch (type) {
+            case COMMAND:
+                scriptSource = new StringScriptSource(command);
+                break;
+            case FILE:
+                scriptSource = new FileScriptSource(scriptFile);
+                break;
+        }
+        type = null;
+        command = null;
+        scriptFile = null;
+        
+        return this;
     }
 
 }
