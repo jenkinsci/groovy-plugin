@@ -20,6 +20,7 @@ public class FileScriptSource implements ScriptSource {
         this.scriptFile = scriptFile;
     }
 
+    @Override
     public FilePath getScriptFile(FilePath workspace) {
         return new FilePath(workspace, scriptFile);
     }

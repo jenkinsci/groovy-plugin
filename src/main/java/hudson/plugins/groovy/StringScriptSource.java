@@ -22,6 +22,7 @@ public class StringScriptSource implements ScriptSource {
         this.command = command;
     }
 
+    @Override
     public FilePath getScriptFile(FilePath workspace) throws IOException, InterruptedException {
         return workspace.createTextTempFile("hudson", ".groovy", command, true);
     }
