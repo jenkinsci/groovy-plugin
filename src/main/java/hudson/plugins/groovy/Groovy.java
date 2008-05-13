@@ -161,8 +161,23 @@ public class Groovy extends Builder {
 
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject data) throws FormException {
+            Object scriptSourceObject = data.get("scriptSource");
+            if(scriptSourceObject instanceof JSONArray) {
+                //Dunno why this happens. Let's fix the JSON object so that newInstanceFromRadioList() doesn't go mad.
+                JSONArray scriptSourceJSONArray = (JSONArray) scriptSourceObject;
+                JSONObject scriptSourceJSONObject = new JSONObject();
+                Object nestedObject = scriptSourceJSONArray.get(1);
+                if(nestedObject instanceof JSONObject) {
+                    //command/file path
+                    scriptSourceJSONObject.putAll((JSONObject) nestedObject);
+                    //selected radio button index
+                    scriptSourceJSONObject.put("value", scriptSourceJSONArray.get(0));
+                    
+                    data.put("scriptSource", scriptSourceJSONObject);
+                }
+            }
             ScriptSource source = ScriptSource.SOURCES.newInstanceFromRadioList(data,"scriptSource");
-
+            
             String instName = data.getString("groovyName");
             String params = data.getString("parameters");
             String scriptParams = data.getString("scriptParameters");
