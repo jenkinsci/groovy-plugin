@@ -4,7 +4,9 @@ import hudson.FilePath;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import java.io.IOException;
+import java.io.InputStream;
 import net.sf.json.JSONObject;
+import org.codehaus.plexus.util.StringInputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -23,8 +25,13 @@ public class StringScriptSource implements ScriptSource {
     }
 
     @Override
-    public FilePath getScriptFile(FilePath workspace) throws IOException, InterruptedException {
-        return workspace.createTextTempFile("hudson", ".groovy", command, true);
+    public InputStream getScriptStream(FilePath projectWorkspace) {
+        return new StringInputStream(command);
+    }
+    
+    @Override
+    public FilePath getScriptFile(FilePath projectWorkspace) throws IOException, InterruptedException {
+        return projectWorkspace.createTextTempFile("hudson", ".groovy", command, true);
     }
 
     public String getCommand() {

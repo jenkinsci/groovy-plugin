@@ -1,6 +1,8 @@
 package hudson.plugins.groovy;
 
+import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -8,9 +10,12 @@ import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.remoting.Callable;
 import hudson.tasks.Builder;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Properties;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -20,26 +25,25 @@ import org.kohsuke.stapler.StaplerRequest;
  * 
  * @author dvrzalik
  */
-public class SystemGroovy extends Builder {
+public class SystemGroovy extends AbstractGroovy {
 
-    private String command;
-     
-     /**
-     * @stapler-constructor
-     */
-    @DataBoundConstructor
-    public SystemGroovy(String command) {
-        this.command = command;
-    }  
+    //initial variable bindings
+    String bindings;
     
+    @DataBoundConstructor
+    public SystemGroovy(ScriptSource scriptSource, String bindings) {
+        super(scriptSource);
+        this.bindings = bindings;
+    }
+
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-       Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-       
-       GroovyShell shell = new GroovyShell();
+        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        
+        GroovyShell shell = new GroovyShell(new Binding(parseProperties(bindings)));
 
         shell.setVariable("out", listener.getLogger());
-        Object output = shell.evaluate(command);
+        Object output = shell.evaluate(getScriptSource().getScriptStream(build.getProject().getWorkspace()));
         if (output instanceof Boolean) {
             return (Boolean) output;
         } else {
@@ -61,7 +65,7 @@ public class SystemGroovy extends Builder {
     
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public static final class DescriptorImpl extends Descriptor<Builder> {
+    public static final class DescriptorImpl extends AbstractGroovyDescriptor {
 
         DescriptorImpl() {
             super(SystemGroovy.class);
@@ -75,20 +79,37 @@ public class SystemGroovy extends Builder {
         
          @Override
         public Builder newInstance(StaplerRequest req, JSONObject data) throws FormException {
-              return req.bindJSON(SystemGroovy.class, data);
+            ScriptSource source = getScriptSource(req, data);
+            String binds = data.getString("bindings");
+            return new SystemGroovy(source, binds);
          }
 
         @Override
         public String getHelpFile() {
             return "/plugin/groovy/systemscript-projectconfig.html";
         }
-        
-         
     }
 
+    //---- Backward compatibility -------- //
+    
+    public enum BuilderType { COMMAND,FILE }
+    
+    private String command;
+    
+    private Object readResolve() {
+        if(command != null) {
+            scriptSource = new StringScriptSource(command);
+            command = null;
+        }
+
+        return this;
+    }
+    
     public String getCommand() {
         return command;
     }
-    
-    
+
+    public String getBindings() {
+        return bindings;
+    }
 }

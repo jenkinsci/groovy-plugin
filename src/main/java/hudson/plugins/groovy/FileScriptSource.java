@@ -2,6 +2,8 @@ package hudson.plugins.groovy;
 
 import hudson.FilePath;
 import hudson.model.Descriptor;
+import java.io.IOException;
+import java.io.InputStream;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -21,12 +23,17 @@ public class FileScriptSource implements ScriptSource {
     }
 
     @Override
-    public FilePath getScriptFile(FilePath workspace) {
-        return new FilePath(workspace, scriptFile);
+    public FilePath getScriptFile(FilePath projectWorkspace) {
+        return new FilePath(projectWorkspace, scriptFile);
     }
 
     public String getScriptFile() {
       return scriptFile;
+    }
+
+    @Override
+    public InputStream getScriptStream(FilePath projectWorkspace) throws IOException {
+        return getScriptFile(projectWorkspace).read();
     }
 
     public Descriptor<ScriptSource> getDescriptor() {
