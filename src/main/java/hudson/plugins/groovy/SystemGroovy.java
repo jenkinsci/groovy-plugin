@@ -17,6 +17,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Properties;
 import net.sf.json.JSONObject;
+import org.codehaus.groovy.control.CompilerConfiguration;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -29,18 +30,24 @@ public class SystemGroovy extends AbstractGroovy {
 
     //initial variable bindings
     String bindings;
+    String classpath;
     
     @DataBoundConstructor
-    public SystemGroovy(ScriptSource scriptSource, String bindings) {
+    public SystemGroovy(ScriptSource scriptSource, String bindings,String classpath) {
         super(scriptSource);
         this.bindings = bindings;
+        this.classpath = classpath;
     }
 
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         
-        GroovyShell shell = new GroovyShell(new Binding(parseProperties(bindings)));
+        CompilerConfiguration compilerConfig = new CompilerConfiguration();
+        if(classpath != null) {
+            compilerConfig.setClasspath(classpath);
+        }
+        GroovyShell shell = new GroovyShell(new Binding(parseProperties(bindings)),compilerConfig);
 
         shell.setVariable("out", listener.getLogger());
         Object output = shell.evaluate(getScriptSource().getScriptStream(build.getProject().getWorkspace()));
@@ -81,7 +88,8 @@ public class SystemGroovy extends AbstractGroovy {
         public Builder newInstance(StaplerRequest req, JSONObject data) throws FormException {
             ScriptSource source = getScriptSource(req, data);
             String binds = data.getString("bindings");
-            return new SystemGroovy(source, binds);
+            String classp = data.getString("classpath");
+            return new SystemGroovy(source, binds, classp);
          }
 
         @Override
@@ -111,5 +119,9 @@ public class SystemGroovy extends AbstractGroovy {
 
     public String getBindings() {
         return bindings;
+    }
+
+    public String getClasspath() {
+        return classpath;
     }
 }

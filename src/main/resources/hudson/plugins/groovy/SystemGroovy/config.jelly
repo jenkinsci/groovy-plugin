@@ -17,4 +17,8 @@
         <f:textarea name="groovy.bindings" value="${instance.bindings}"/>
     </f:entry>
     
+    <f:entry title="${%Classpath}">
+        <f:textbox name="groovy.classpath" value="${instance.classpath}"/>
+    </f:entry>
+    
 </j:jelly>
