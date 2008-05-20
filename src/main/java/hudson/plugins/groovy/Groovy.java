@@ -39,10 +39,8 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author dvrzalik
  */
-public class Groovy extends Builder {
+public class Groovy extends AbstractGroovy {
     
-    public ScriptSource scriptSource;
-
     private String groovyName;
     private String parameters;
     private String scriptParameters;
@@ -50,7 +48,7 @@ public class Groovy extends Builder {
 
     public Groovy(ScriptSource scriptSource, String groovyName, String parameters, 
             String scriptParameters, String properties) {
-        this.scriptSource = scriptSource;
+        super(scriptSource);
         this.groovyName = groovyName;
         this.parameters = parameters;
         this.scriptParameters = scriptParameters;
@@ -61,15 +59,20 @@ public class Groovy extends Builder {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
 
+        if (scriptSource == null) {
+            listener.fatalError("There is no script configured for this builder");
+            return false;
+        }
+
         AbstractProject proj = build.getProject();
         FilePath ws = proj.getWorkspace();
         FilePath script = null;
         try {
-          script = scriptSource.getScriptFile(ws);
+            script = scriptSource.getScriptFile(ws);
         } catch (IOException e) {
-          Util.displayIOException(e, listener);
-          e.printStackTrace(listener.fatalError("Unable to produce a script file"));
-          return false;
+            Util.displayIOException(e, listener);
+            e.printStackTrace(listener.fatalError("Unable to produce a script file"));
+            return false;
         }
         try {
             String[] cmd = buildCommandLine(script);
@@ -89,12 +92,7 @@ public class Groovy extends Builder {
                 if(properties != null) {
                     String origJavaOpts = build.getBuildVariables().get("JAVA_OPTS");
                     StringBuffer javaOpts = new StringBuffer((origJavaOpts != null) ? origJavaOpts : "");
-                    Properties props = new Properties();
-                    try {
-                        props.load(new StringReader(properties));
-                    } catch (NoSuchMethodError err) {
-                        props.load(new ByteArrayInputStream(properties.getBytes()));
-                    }
+                    Properties props = parseProperties(properties);
 
                     for (Entry<Object,Object> entry : props.entrySet()) {
                         javaOpts.append(" -D" + entry.getKey() + "=" + entry.getValue());
@@ -128,7 +126,7 @@ public class Groovy extends Builder {
 
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public static final class DescriptorImpl extends Descriptor<Builder> {
+    public static final class DescriptorImpl extends AbstractGroovyDescriptor {
 
         @CopyOnWrite
         private volatile GroovyInstallation[] installations = new GroovyInstallation[0];
@@ -161,23 +159,7 @@ public class Groovy extends Builder {
 
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject data) throws FormException {
-            Object scriptSourceObject = data.get("scriptSource");
-            if(scriptSourceObject instanceof JSONArray) {
-                //Dunno why this happens. Let's fix the JSON object so that newInstanceFromRadioList() doesn't go mad.
-                JSONArray scriptSourceJSONArray = (JSONArray) scriptSourceObject;
-                JSONObject scriptSourceJSONObject = new JSONObject();
-                Object nestedObject = scriptSourceJSONArray.get(1);
-                if(nestedObject instanceof JSONObject) {
-                    //command/file path
-                    scriptSourceJSONObject.putAll((JSONObject) nestedObject);
-                    //selected radio button index
-                    scriptSourceJSONObject.put("value", scriptSourceJSONArray.get(0));
-                    
-                    data.put("scriptSource", scriptSourceJSONObject);
-                }
-            }
-            ScriptSource source = ScriptSource.SOURCES.newInstanceFromRadioList(data,"scriptSource");
-            
+            ScriptSource source = getScriptSource(req, data);
             String instName = data.getString("groovyName");
             String params = data.getString("parameters");
             String scriptParams = data.getString("scriptParameters");
@@ -192,17 +174,6 @@ public class Groovy extends Builder {
               return i;
             }
           return null;
-        }
-        
-        //shortcut
-        public static DescriptorList<ScriptSource> getScriptSources() {
-            return ScriptSource.SOURCES;
-        }
-
-        //Used for grouping radio buttons together
-        private AtomicInteger instanceCounter = new AtomicInteger(0);
-        public int nextInstanceID() {
-          return instanceCounter.incrementAndGet();
         }
     }
 
