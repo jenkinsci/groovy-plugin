@@ -319,14 +319,17 @@ public class Groovy extends AbstractGroovy {
     private String scriptFile;
     
     private Object readResolve() {
-        switch (type) {
-            case COMMAND:
-                scriptSource = new StringScriptSource(command);
-                break;
-            case FILE:
-                scriptSource = new FileScriptSource(scriptFile);
-                break;
+        if (type != null) {
+            switch (type) {
+                case COMMAND:
+                    scriptSource = new StringScriptSource(command);
+                    break;
+                case FILE:
+                    scriptSource = new FileScriptSource(scriptFile);
+                    break;
+            }
         }
+        
         type = null;
         command = null;
         scriptFile = null;
