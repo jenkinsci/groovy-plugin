@@ -21,14 +21,14 @@
     </j:forEach>
     
     <f:advanced>
-      <f:entry title="Groovy parameters">
+      <f:entry title="Groovy parameters" help="/plugin/groovy/parameters.html" >
         <f:expandableTextbox name="groovy.parameters" type="text" value="${instance.parameters}" />
       </f:entry>
-      <f:entry title="Script parameters">
-        <f:expandableTextbox name="groovy.scriptParameters" value="${instance.scriptParameters}"/>
+      <f:entry title="Script parameters" help="/plugin/groovy/script-parameters.html" >
+        <f:expandableTextbox name="groovy.scriptParameters" value="${instance.scriptParameters}" />
       </f:entry>
-      <f:entry title="${%Properties}">
-        <f:textarea name="groovy.properties" value="${instance.properties}"/>
+      <f:entry title="${%Properties}" help="/plugin/groovy/properties.html">
+        <f:textarea name="groovy.properties" value="${instance.properties}" />
       </f:entry>
     </f:advanced>
   </f:entry>

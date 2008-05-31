@@ -14,12 +14,12 @@
     </j:forEach>
     
     <f:advanced>
-      <f:entry title="${%Variable bindings}">
-          <f:textarea name="groovy.bindings" value="${instance.bindings}"/>
+      <f:entry title="${%Variable bindings}" help="/plugin/groovy/bindings.html" >
+          <f:textarea name="groovy.bindings" value="${instance.bindings}" />
       </f:entry>
     
-      <f:entry title="${%Classpath}">
-          <f:textbox name="groovy.classpath" value="${instance.classpath}"/>
+      <f:entry title="${%Classpath}" help="/plugin/groovy/classpath.html" >
+          <f:textbox name="groovy.classpath" value="${instance.classpath}" />
       </f:entry>
     </f:advanced>
     
