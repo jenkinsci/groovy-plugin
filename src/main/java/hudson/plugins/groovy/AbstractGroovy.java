@@ -1,13 +1,6 @@
 package hudson.plugins.groovy;
 
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.Util;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
-import hudson.plugins.groovy.Groovy.BuilderType;
 import hudson.tasks.Builder;
 import hudson.util.DescriptorList;
 import java.io.ByteArrayInputStream;

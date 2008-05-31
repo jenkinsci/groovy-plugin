@@ -2,11 +2,9 @@ package hudson.plugins.groovy;
 
 import hudson.FilePath;
 import hudson.model.Describable;
-import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 /**
  * Base interface for Groovy script sources.
