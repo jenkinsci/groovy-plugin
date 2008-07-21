@@ -6,6 +6,7 @@ import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.StructuredForm;
 import hudson.Util;
+import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -215,7 +216,8 @@ public class Groovy extends AbstractGroovy {
             if (File.separatorChar == '\\') {
                 execName += ".exe";
             }
-            return new File(getHome(), "bin/" + execName);
+            String groovyHome = Util.replaceMacro(getHome(),EnvVars.masterEnvVars);
+            return new File(groovyHome, "bin/" + execName);
         }
 
         /**
