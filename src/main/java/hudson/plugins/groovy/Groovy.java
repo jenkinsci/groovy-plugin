@@ -24,6 +24,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -145,10 +148,14 @@ public class Groovy extends AbstractGroovy {
 
         @Override
         public boolean configure(StaplerRequest req) {
-            installations = req.bindJSONToList(
-                    GroovyInstallation.class, StructuredForm.get(req).get("groovy")).toArray(new GroovyInstallation[0]);
-            save();
-            return true;
+            try {
+                installations = req.bindJSONToList(GroovyInstallation.class, req.getSubmittedForm().get("groovy")).toArray(new GroovyInstallation[0]);
+                save();
+                return true;
+            } catch (ServletException ex) {
+                Logger.getLogger(Groovy.class.getName()).log(Level.SEVERE, null, ex);
+                return false;
+            }
         }
 
         @Override
