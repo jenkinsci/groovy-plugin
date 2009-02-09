@@ -17,6 +17,7 @@ import hudson.tasks.Builder;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -213,8 +214,9 @@ public class Groovy extends AbstractGroovy {
                     File exe = getExeFile("groovy");
                     if (exe.exists()) {
                         return exe.getPath();
+                    } else {
+                        throw new FileNotFoundException(exe.getPath() + " doesn't exist, please check your Groovy installation");
                     }
-                    return null;
                 }
             });
         }
