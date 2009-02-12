@@ -12,4 +12,5 @@
   <packaging>hpi</packaging>
   <name>Hudson Groovy builder</name>
   <version>1.4-SNAPSHOT</version>
+  <url>http://hudson.gotdns.com/wiki/display/HUDSON/mldack</url>
 </project>
