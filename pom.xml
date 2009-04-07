@@ -13,4 +13,12 @@
   <name>Hudson Groovy builder</name>
   <version>1.4-SNAPSHOT</version>
   <url>http://wiki.hudson-ci.org/display/HUDSON/mldack</url>
+  
+  <dependencies>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>1.5.1</version>
+    </dependency>
+  </dependencies>
 </project>
