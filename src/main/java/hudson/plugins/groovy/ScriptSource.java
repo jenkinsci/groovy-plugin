@@ -29,6 +29,6 @@ public interface ScriptSource extends Describable<ScriptSource> {
     public InputStream getScriptStream(FilePath projectWorkspace) throws IOException, InterruptedException;
     
     public static final DescriptorList<ScriptSource> SOURCES = 
-            new DescriptorList<ScriptSource>(StringScriptSource.DESCRIPTOR, FileScriptSource.DESCRIPTOR);
+            new DescriptorList<ScriptSource>(ScriptSource.class);
 
 }

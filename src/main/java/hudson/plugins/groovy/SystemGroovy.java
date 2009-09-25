@@ -2,6 +2,7 @@ package hudson.plugins.groovy;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -43,7 +44,7 @@ public class SystemGroovy extends AbstractGroovy {
         GroovyShell shell = new GroovyShell(new Binding(parseProperties(bindings)),compilerConfig);
 
         shell.setVariable("out", listener.getLogger());
-        Object output = shell.evaluate(getScriptSource().getScriptStream(build.getProject().getWorkspace()));
+        Object output = shell.evaluate(getScriptSource().getScriptStream(build.getWorkspace()));
         if (output instanceof Boolean) {
             return (Boolean) output;
         } else {
@@ -59,10 +60,12 @@ public class SystemGroovy extends AbstractGroovy {
         return true;
     }
     
+    @Override
     public Descriptor<Builder> getDescriptor() {
         return DESCRIPTOR;
-    }   
-    
+    }
+
+    @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends AbstractGroovyDescriptor {

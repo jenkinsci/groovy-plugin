@@ -1,5 +1,6 @@
 package hudson.plugins.groovy;
 
+import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Descriptor;
 import java.io.IOException;
@@ -39,9 +40,11 @@ public class FileScriptSource implements ScriptSource {
     public Descriptor<ScriptSource> getDescriptor() {
         return DESCRIPTOR;
     }
+
+    @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public static class DescriptorImpl extends Descriptor {
+    public static class DescriptorImpl extends Descriptor<ScriptSource> {
 
         public DescriptorImpl() {
             super(FileScriptSource.class);

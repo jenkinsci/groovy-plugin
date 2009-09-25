@@ -1,5 +1,6 @@
 package hudson.plugins.groovy;
 
+import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
@@ -41,9 +42,11 @@ public class StringScriptSource implements ScriptSource {
     public Descriptor getDescriptor() {
         return DESCRIPTOR;
     }
+
+    @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public static class DescriptorImpl extends Descriptor {
+    public static class DescriptorImpl extends Descriptor<ScriptSource> {
 
         public DescriptorImpl() {
             super(StringScriptSource.class);

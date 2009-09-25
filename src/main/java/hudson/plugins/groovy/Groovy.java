@@ -4,11 +4,10 @@ import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
-import hudson.StructuredForm;
 import hudson.Util;
 import hudson.EnvVars;
+import hudson.Extension;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.remoting.Callable;
@@ -62,8 +61,7 @@ public class Groovy extends AbstractGroovy {
             return false;
         }
 
-        AbstractProject proj = build.getProject();
-        FilePath ws = proj.getWorkspace();
+        FilePath ws = build.getWorkspace();
         FilePath script = null;
         try {
             script = scriptSource.getScriptFile(ws);
@@ -77,7 +75,7 @@ public class Groovy extends AbstractGroovy {
 
             int result;
             try {
-                Map<String,String> envVars = build.getEnvVars();
+                Map<String,String> envVars = build.getEnvironment(listener);
                 GroovyInstallation installation = getGroovy();
                 if(installation != null) {
                     envVars.put("GROOVY_HOME", installation.getHome());
@@ -99,7 +97,7 @@ public class Groovy extends AbstractGroovy {
                     envVars.put("JAVA_OPTS", javaOpts.toString());
                  }
 
-                result = launcher.launch(cmd,envVars,listener.getLogger(),ws).join();
+                result = launcher.launch().cmds(cmd).envs(envVars).stdout(listener).pwd(ws).join();
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
                 e.printStackTrace( listener.fatalError("command execution failed") );
@@ -117,11 +115,12 @@ public class Groovy extends AbstractGroovy {
         }
     }
 
+    @Override
     public Descriptor<Builder> getDescriptor() {
         return DESCRIPTOR;
     }
 
-
+    @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends AbstractGroovyDescriptor {
@@ -148,7 +147,7 @@ public class Groovy extends AbstractGroovy {
         }
 
         @Override
-        public boolean configure(StaplerRequest req) {
+        public boolean configure(StaplerRequest req, JSONObject formData) {
             try {
                 installations = req.bindJSONToList(GroovyInstallation.class, req.getSubmittedForm().get("groovy")).toArray(new GroovyInstallation[0]);
                 save();
