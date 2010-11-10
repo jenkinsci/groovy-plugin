@@ -222,11 +222,16 @@ public class Groovy extends AbstractGroovy {
         }
 
         private File getExeFile(String execName) {
-            if (File.separatorChar == '\\') {
-                execName += ".exe";
-            }
             String groovyHome = Util.replaceMacro(getHome(),EnvVars.masterEnvVars);
-            return new File(groovyHome, "bin/" + execName);
+            File binDir = new File(groovyHome, "bin/");
+            if (File.separatorChar == '\\') {                
+                if(new File(binDir, execName + ".exe").exists()) {
+                    execName += ".exe";
+                } else {
+                    execName += ".bat";
+                }
+            }
+            return new File(binDir, execName);            
         }
 
         /**
