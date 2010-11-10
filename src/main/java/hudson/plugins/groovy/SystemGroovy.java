@@ -41,7 +41,10 @@ public class SystemGroovy extends AbstractGroovy {
         if(classpath != null) {
             compilerConfig.setClasspath(classpath);
         }
-        GroovyShell shell = new GroovyShell(new Binding(parseProperties(bindings)),compilerConfig);
+        //see RemotingDiagnostics.Script
+        ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
+        if (cl==null)       cl = Thread.currentThread().getContextClassLoader();
+        GroovyShell shell = new GroovyShell(cl,new Binding(parseProperties(bindings)),compilerConfig);
 
         shell.setVariable("out", listener.getLogger());
         Object output = shell.evaluate(getScriptSource().getScriptStream(build.getWorkspace(),build,listener));
