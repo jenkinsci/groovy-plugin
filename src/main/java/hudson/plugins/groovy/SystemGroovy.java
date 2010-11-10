@@ -44,7 +44,7 @@ public class SystemGroovy extends AbstractGroovy {
         GroovyShell shell = new GroovyShell(new Binding(parseProperties(bindings)),compilerConfig);
 
         shell.setVariable("out", listener.getLogger());
-        Object output = shell.evaluate(getScriptSource().getScriptStream(build.getWorkspace()));
+        Object output = shell.evaluate(getScriptSource().getScriptStream(build.getWorkspace(),build,listener));
         if (output instanceof Boolean) {
             return (Boolean) output;
         } else {

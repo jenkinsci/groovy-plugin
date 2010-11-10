@@ -2,6 +2,8 @@ package hudson.plugins.groovy;
 
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import java.io.IOException;
@@ -31,8 +33,18 @@ public class StringScriptSource implements ScriptSource {
     }
     
     @Override
+    public InputStream getScriptStream(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) {
+        return getScriptStream(projectWorkspace);
+    }
+    
+    @Override
     public FilePath getScriptFile(FilePath projectWorkspace) throws IOException, InterruptedException {
         return projectWorkspace.createTextTempFile("hudson", ".groovy", command, true);
+    }
+    
+    @Override
+    public FilePath getScriptFile(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
+        return getScriptFile(projectWorkspace);
     }
 
     public String getCommand() {

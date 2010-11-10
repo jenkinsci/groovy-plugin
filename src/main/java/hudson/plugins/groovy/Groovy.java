@@ -64,7 +64,7 @@ public class Groovy extends AbstractGroovy {
         FilePath ws = build.getWorkspace();
         FilePath script = null;
         try {
-            script = scriptSource.getScriptFile(ws);
+            script = scriptSource.getScriptFile(ws,build,listener);
         } catch (IOException e) {
             Util.displayIOException(e, listener);
             e.printStackTrace(listener.fatalError("Unable to produce a script file"));

@@ -1,11 +1,17 @@
 package hudson.plugins.groovy;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.AbstractBuild;
+
 import java.io.IOException;
 import java.io.InputStream;
+
 import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -27,6 +33,13 @@ public class FileScriptSource implements ScriptSource {
     public FilePath getScriptFile(FilePath projectWorkspace) {
         return new FilePath(projectWorkspace, scriptFile);
     }
+    
+    @Override
+    public FilePath getScriptFile(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException{
+    	EnvVars env = build.getEnvironment(listener);
+    	String expandedScriptdFile = env.expand(this.scriptFile);
+        return new FilePath(projectWorkspace, expandedScriptdFile);
+    }
 
     public String getScriptFile() {
       return scriptFile;
@@ -37,6 +50,11 @@ public class FileScriptSource implements ScriptSource {
         return getScriptFile(projectWorkspace).read();
     }
 
+    @Override
+    public InputStream getScriptStream(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
+        return getScriptFile(projectWorkspace,build,listener).read();
+    }
+    
     public Descriptor<ScriptSource> getDescriptor() {
         return DESCRIPTOR;
     }
