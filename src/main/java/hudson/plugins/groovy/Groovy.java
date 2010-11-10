@@ -106,8 +106,9 @@ public class Groovy extends AbstractGroovy {
             return result==0;
         } finally {
             try {
-                if((type == BuilderType.COMMAND) && (script!=null))
-                script.delete();
+                if((scriptSource instanceof StringScriptSource) && (script!=null)){
+                	script.delete();
+                }
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
                 e.printStackTrace( listener.fatalError("Unable to delete script file "+script) );
