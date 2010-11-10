@@ -11,7 +11,7 @@
   <artifactId>groovy</artifactId>
   <packaging>hpi</packaging>
   <name>Hudson Groovy builder</name>
-  <version>1.5-SNAPSHOT</version>
+  <version>1.5</version>
   <url>http://wiki.hudson-ci.org/display/HUDSON/Groovy+plugin</url>
 
   <developers>
@@ -28,4 +28,10 @@
       <version>1.5.1</version>
     </dependency>
   </dependencies>
+
+  <scm>
+    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/tags/groovy-1.5</connection>
+    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/groovy-1.5</developerConnection>
+    <url>https://hudson.dev.java.net/source/browse/hudson/tags/groovy-1.5</url>
+  </scm>
 </project>
