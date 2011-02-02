@@ -8,6 +8,7 @@ import hudson.Util;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.remoting.Callable;
@@ -138,6 +139,11 @@ public class Groovy extends AbstractGroovy {
             return "Execute Groovy script";
         }
 
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType){
+        	return true;
+        }
+        
         @Override
         public String getHelpFile() {
             return "/plugin/groovy/project-config.html";

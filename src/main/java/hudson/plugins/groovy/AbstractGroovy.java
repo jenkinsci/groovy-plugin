@@ -1,15 +1,19 @@
 package hudson.plugins.groovy;
 
-import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.DescriptorList;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -26,7 +30,7 @@ public abstract class AbstractGroovy extends Builder {
         this.scriptSource = scriptSource;
     }
 
-    public static abstract class AbstractGroovyDescriptor extends Descriptor<Builder> {
+    public static abstract class AbstractGroovyDescriptor extends BuildStepDescriptor<Builder> {
 
         public AbstractGroovyDescriptor(Class<? extends Builder> clazz) {
             super(clazz);

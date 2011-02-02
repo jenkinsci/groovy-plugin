@@ -4,13 +4,19 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Hudson;
+import hudson.security.ACL;
 import hudson.tasks.Builder;
+
 import java.io.IOException;
+
 import net.sf.json.JSONObject;
+
+import org.acegisecurity.Authentication;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -35,8 +41,8 @@ public class SystemGroovy extends AbstractGroovy {
 
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-        
+        //Hudson.getInstance().checkPermission(Hudson.ADMINISTER); // WTF - always pass, executed as SYSTEM
+      
         CompilerConfiguration compilerConfig = new CompilerConfiguration();
         if(classpath != null) {
             compilerConfig.setClasspath(classpath);
@@ -83,8 +89,19 @@ public class SystemGroovy extends AbstractGroovy {
             return "Execute system Groovy script";
         }
         
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType){
+        	Authentication a = Hudson.getAuthentication();
+            if(Hudson.getInstance().getACL().hasPermission(a,Hudson.ADMINISTER)){
+            	return true;
+            }
+        	return false;
+        }
+        
          @Override
         public Builder newInstance(StaplerRequest req, JSONObject data) throws FormException {
+        	//don't allow unauthorized users to modify scripts
+        	Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
             ScriptSource source = getScriptSource(req, data);
             String binds = data.getString("bindings");
             String classp = data.getString("classpath");
