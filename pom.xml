@@ -11,7 +11,7 @@
   <artifactId>groovy</artifactId>
   <packaging>hpi</packaging>
   <name>Hudson Groovy builder</name>
-  <version>1.6</version>
+  <version>1.7-SNAPSHOT</version>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Groovy+plugin</url>
 
   <developers>
