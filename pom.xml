@@ -12,7 +12,7 @@
   <packaging>hpi</packaging>
   <name>Hudson Groovy builder</name>
   <version>1.6-SNAPSHOT</version>
-  <url>http://wiki.hudson-ci.org/display/HUDSON/Groovy+plugin</url>
+  <url>http://wiki.jenkins-ci.org/display/JENKINS/Groovy+plugin</url>
 
   <developers>
     <developer>
@@ -22,9 +22,9 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git://github.com/hudson/groovy-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:hudson/groovy-plugin.git</developerConnection>
-    <url>http://github.com/hudson/groovy-plugin</url>
+    <connection>scm:git:git://github.com/jenkinsci/groovy-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/groovy-plugin.git</developerConnection>
+    <url>http://github.com/jenkinsci/groovy-plugin</url>
   </scm>
 
   <dependencies>
