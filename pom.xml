@@ -27,6 +27,15 @@
     <url>http://github.com/jenkinsci/groovy-plugin</url>
   </scm>
 
+
+  <distributionManagement>
+    <repository>
+      <id>java.net-m2-repository</id>
+      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/
+      </url>
+    </repository>
+  </distributionManagement>
+
   <dependencies>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
