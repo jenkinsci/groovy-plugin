@@ -4,14 +4,14 @@
   <parent>
     <groupId>org.jvnet.hudson.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.358</version>
+    <version>1.391</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
   <artifactId>groovy</artifactId>
   <packaging>hpi</packaging>
   <name>Hudson Groovy builder</name>
-  <version>1.7-SNAPSHOT</version>
+  <version>1.6-SNAPSHOT</version>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Groovy+plugin</url>
 
   <developers>
