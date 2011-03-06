@@ -31,7 +31,8 @@ public class SystemGroovy extends AbstractGroovy {
     //initial variable bindings
     String bindings;
     String classpath;
-    
+    Object output;
+
     @DataBoundConstructor
     public SystemGroovy(ScriptSource scriptSource, String bindings,String classpath) {
         super(scriptSource);
@@ -53,7 +54,7 @@ public class SystemGroovy extends AbstractGroovy {
         GroovyShell shell = new GroovyShell(cl,new Binding(parseProperties(bindings)),compilerConfig);
 
         shell.setVariable("out", listener.getLogger());
-        Object output = shell.evaluate(getScriptSource().getScriptStream(build.getWorkspace(),build,listener));
+        output = shell.evaluate(getScriptSource().getScriptStream(build.getWorkspace(),build,listener));
         if (output instanceof Boolean) {
             return (Boolean) output;
         } else {
@@ -139,5 +140,9 @@ public class SystemGroovy extends AbstractGroovy {
 
     public String getClasspath() {
         return classpath;
+    }
+
+    public Object getOutput() {
+        return output;
     }
 }
