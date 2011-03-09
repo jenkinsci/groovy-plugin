@@ -21,5 +21,9 @@
         </table>
       </f:repeatable>
     </f:entry>
+    <f:entry title="${%Allow token macro processing}" description="${%Possible security hole, read help!}" 
+    help="/plugin/groovy/help/global/allowMacro.html">
+    	<f:checkbox name="allowMacro" checked="${descriptor.allowMacro}" />
+    </f:entry>
   </f:section>
 </j:jelly>

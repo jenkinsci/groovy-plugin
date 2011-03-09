@@ -36,34 +36,35 @@ import java.io.IOException;
 
 /**
  * {@code GROOVY} token that evaluates groovy expressions.
- *
+ * 
  * @author Nigel Magnay
  */
 @Extension
 public class GroovyTokenMacro extends DataBoundTokenMacro {
-    /**
-     * Script to use.
-     */
-    @Parameter
-    public String script;
+	/**
+	 * Script to use.
+	 */
+	@Parameter
+	public String script;
 
-    @Override
-    public boolean acceptsMacroName(String macroName) {
-        return macroName.equals("GROOVY");
-    }
+	@Override
+	public boolean acceptsMacroName(String macroName) {
+		return macroName.equals("GROOVY");
+	}
 
-    @Override
-    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
-
-        StringScriptSource scriptSource = new StringScriptSource(script);
-
-        SystemGroovy systemGroovy = new SystemGroovy(scriptSource, "", null);
-
-        systemGroovy.perform(context, null, (BuildListener)listener);
-
-        Object output = systemGroovy.getOutput();
-
-        return output!=null?output.toString():"";
-    }
+	@Override
+	public String evaluate(AbstractBuild<?, ?> context, TaskListener listener,String macroName) throws MacroEvaluationException, IOException,InterruptedException {
+		Groovy.DescriptorImpl decs = (Groovy.DescriptorImpl) Hudson.getInstance().getDescriptorOrDie(Groovy.class);
+		if (decs.getAllowMacro()) {
+			StringScriptSource scriptSource = new StringScriptSource(script);
+			SystemGroovy systemGroovy = new SystemGroovy(scriptSource, "", null);
+			systemGroovy.perform(context, null, (BuildListener) listener);
+			Object output = systemGroovy.getOutput();
+			return output != null ? output.toString() : "";
+		}
+		else{
+			return script;
+		}
+	}
 
 }

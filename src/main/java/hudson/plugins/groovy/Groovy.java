@@ -127,12 +127,18 @@ public class Groovy extends AbstractGroovy {
 
     public static final class DescriptorImpl extends AbstractGroovyDescriptor {
 
+    	private boolean allowMacro;
+    	
         @CopyOnWrite
         private volatile GroovyInstallation[] installations = new GroovyInstallation[0];
 
         DescriptorImpl() {
             super(Groovy.class);
             load();
+        }
+        
+        public boolean getAllowMacro(){
+        	return allowMacro;
         }
 
         public String getDisplayName() {
@@ -157,6 +163,7 @@ public class Groovy extends AbstractGroovy {
         public boolean configure(StaplerRequest req, JSONObject formData) {
             try {
                 installations = req.bindJSONToList(GroovyInstallation.class, req.getSubmittedForm().get("groovy")).toArray(new GroovyInstallation[0]);
+                allowMacro = req.getSubmittedForm().getBoolean("allowMacro");
                 save();
                 return true;
             } catch (ServletException ex) {
