@@ -5,7 +5,6 @@
     <groupId>org.jvnet.hudson.plugins</groupId>
     <artifactId>plugin</artifactId>
     <version>1.391</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
   
   <artifactId>groovy</artifactId>
