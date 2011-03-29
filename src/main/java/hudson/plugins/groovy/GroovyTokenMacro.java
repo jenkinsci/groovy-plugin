@@ -39,7 +39,7 @@ import java.io.IOException;
  * 
  * @author Nigel Magnay
  */
-@Extension
+@Extension(optional=true)
 public class GroovyTokenMacro extends DataBoundTokenMacro {
 	/**
 	 * Script to use.
