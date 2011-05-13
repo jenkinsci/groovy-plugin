@@ -31,7 +31,7 @@ public class SystemGroovy extends AbstractGroovy {
     //initial variable bindings
     String bindings;
     String classpath;
-    Object output;
+    transient Object output;
 
     @DataBoundConstructor
     public SystemGroovy(ScriptSource scriptSource, String bindings,String classpath) {
