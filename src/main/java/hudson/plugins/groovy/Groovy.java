@@ -42,15 +42,21 @@ public class Groovy extends AbstractGroovy {
     private String groovyName;
     private String parameters;
     private String scriptParameters;
-    private String properties;
+    private String properties; // -D properties
+    private String javaOpts;   //sometimes other options than -D are needed to be set up, like -XX. It can be done here. 
+    						   // Properties are kept for user, who don't want bother with -D and backward compatibility 
 
+    private String classPath;  //for user convenience when added more item into class path not have to deal with path separator
+    
     public Groovy(ScriptSource scriptSource, String groovyName, String parameters, 
-            String scriptParameters, String properties) {
+            String scriptParameters, String properties, String javaOpts, String classPath) {
         super(scriptSource);
         this.groovyName = groovyName;
         this.parameters = parameters;
         this.scriptParameters = scriptParameters;
         this.properties = properties;
+        this.javaOpts = javaOpts;
+        this.classPath = classPath;
     }
 
 
@@ -72,7 +78,7 @@ public class Groovy extends AbstractGroovy {
             return false;
         }
         try {
-            String[] cmd = buildCommandLine(script);
+            String[] cmd = buildCommandLine(script,launcher.isUnix());
 
             int result;
             try {
@@ -82,10 +88,11 @@ public class Groovy extends AbstractGroovy {
                     envVars.put("GROOVY_HOME", installation.getHome());
                 }
 
-                for(Map.Entry<String,String> e : build.getBuildVariables().entrySet())
+                for(Map.Entry<String,String> e : build.getBuildVariables().entrySet()){
                     envVars.put(e.getKey(),e.getValue());
+                    System.out.println("key:value: " + e.getKey() + " " + e.getValue());
+                }
 
-                //Pass properties as JAVA_OPTS
                 if(properties != null) {
                     String origJavaOpts = build.getBuildVariables().get("JAVA_OPTS");
                     StringBuffer javaOpts = new StringBuffer((origJavaOpts != null) ? origJavaOpts : "");
@@ -95,8 +102,13 @@ public class Groovy extends AbstractGroovy {
                         javaOpts.append(" -D" + entry.getKey() + "=" + entry.getValue());
                     }
 
+                    //Add javaOpts at the end
+                    javaOpts.append(" " + this.javaOpts);
                     envVars.put("JAVA_OPTS", javaOpts.toString());
                  }
+                
+                envVars.put("$PATH_SEPARATOR",":::");
+                
 
                 result = launcher.launch().cmds(cmd).envs(envVars).stdout(listener).pwd(ws).join();
             } catch (IOException e) {
@@ -177,10 +189,12 @@ public class Groovy extends AbstractGroovy {
             ScriptSource source = getScriptSource(req, data);
             String instName = data.getString("groovyName");
             String params = data.getString("parameters");
+            String classPath = data.getString("classPath").trim();
             String scriptParams = data.getString("scriptParameters");
             String props = data.getString("properties");
+            String javaOpts = data.getString("javaOpts");
             
-            return new Groovy(source, instName, params, scriptParams, props);
+            return new Groovy(source, instName, params, scriptParams, props, javaOpts, classPath);
         }
 
         public static GroovyInstallation getGroovy(String groovyName) {
@@ -269,7 +283,12 @@ public class Groovy extends AbstractGroovy {
         return DescriptorImpl.getGroovy(groovyName);
     }
 
+    //backward compatibility, default is Unix
     protected String[] buildCommandLine(FilePath script) throws IOException, InterruptedException  {
+    	return buildCommandLine(script, true);
+    }
+    
+    protected String[] buildCommandLine(FilePath script, boolean isOnUnix) throws IOException, InterruptedException  {
         ArrayList<String> list = new ArrayList<String>();
 
         String cmd = "groovy";//last hope in case of missing or not selected installation
@@ -280,6 +299,21 @@ public class Groovy extends AbstractGroovy {
         }
         list.add(cmd);
 
+        //Add class path
+        if(classPath != null && classPath != ""){
+        	String pathSeparator = isOnUnix ? ":" : ";";
+        	StringTokenizer tokens = new StringTokenizer(classPath);
+        	list.add("-cp");
+        	// class path has to be one item, otherwise spaces are add around class path separator and build will fail
+        	StringBuilder sb = new StringBuilder();  
+        	sb.append(tokens.nextToken());
+            while(tokens.hasMoreTokens()) {
+            	sb.append(pathSeparator);
+                sb.append(tokens.nextToken());
+            }
+            list.add(sb.toString());
+        }
+        
         //Add groovy parameters
         if(parameters != null) {
             StringTokenizer tokens = new StringTokenizer(parameters);
@@ -331,6 +365,13 @@ public class Groovy extends AbstractGroovy {
         return properties;
     }
     
+    public String getJavaOpts(){
+    	return javaOpts;
+    }
+    
+    public String getClassPath(){
+    	return classPath;
+    }
     
     //---- Backward compatibility -------- //
     
