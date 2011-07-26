@@ -300,7 +300,7 @@ public class Groovy extends AbstractGroovy {
         list.add(cmd);
 
         //Add class path
-        if(classPath != null && classPath != ""){
+        if(classPath != null && !classPath.equals("")){
         	String pathSeparator = isOnUnix ? ":" : ";";
         	StringTokenizer tokens = new StringTokenizer(classPath);
         	list.add("-cp");
