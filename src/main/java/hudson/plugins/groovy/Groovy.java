@@ -103,7 +103,9 @@ public class Groovy extends AbstractGroovy {
                     }
 
                     //Add javaOpts at the end
-                    javaOpts.append(" " + this.javaOpts);
+                    if(this.javaOpts != null) //backward compatibility
+                    	javaOpts.append(" " + this.javaOpts);
+                    
                     envVars.put("JAVA_OPTS", javaOpts.toString());
                  }
                 
