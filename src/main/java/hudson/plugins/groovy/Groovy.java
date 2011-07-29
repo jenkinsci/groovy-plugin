@@ -1,21 +1,23 @@
 package hudson.plugins.groovy;
 
 import hudson.CopyOnWrite;
+import hudson.EnvVars;
+import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
-import hudson.EnvVars;
-import hudson.Extension;
+import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.ParametersAction;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.Builder;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,8 +29,11 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.servlet.ServletException;
+
 import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -78,7 +83,7 @@ public class Groovy extends AbstractGroovy {
             return false;
         }
         try {
-            String[] cmd = buildCommandLine(script,launcher.isUnix());
+            String[] cmd = buildCommandLine(build,script,launcher.isUnix());
 
             int result;
             try {
@@ -286,11 +291,11 @@ public class Groovy extends AbstractGroovy {
     }
 
     //backward compatibility, default is Unix
-    protected String[] buildCommandLine(FilePath script) throws IOException, InterruptedException  {
-    	return buildCommandLine(script, true);
+    protected String[] buildCommandLine(AbstractBuild build,FilePath script) throws IOException, InterruptedException  {
+    	return buildCommandLine(build,script, true);
     }
     
-    protected String[] buildCommandLine(FilePath script, boolean isOnUnix) throws IOException, InterruptedException  {
+    protected String[] buildCommandLine(AbstractBuild build,FilePath script, boolean isOnUnix) throws IOException, InterruptedException  {
         ArrayList<String> list = new ArrayList<String>();
 
         String cmd = "groovy";//last hope in case of missing or not selected installation
@@ -329,8 +334,13 @@ public class Groovy extends AbstractGroovy {
         //Add script parameters
         if(scriptParameters != null) {
             StringTokenizer tokens = new StringTokenizer(scriptParameters);
+            ParametersAction parameters = build.getAction(ParametersAction.class);
             while(tokens.hasMoreTokens()) {
-                list.add(tokens.nextToken());
+            	String token = tokens.nextToken();
+            	if (parameters != null) {
+                    token = parameters.substitute(build, token);
+                }
+                list.add(token);
             }
         }
 
