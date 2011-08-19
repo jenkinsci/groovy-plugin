@@ -10,7 +10,7 @@
           </f:entry>
 
           <f:entry title="GROOVY_HOME">
-            <input class="setting-input validated" name="groovy.home"
+            <input class="setting-input" name="groovy.home"
               type="text" value="${groovy.home}" />
           </f:entry>
           <f:entry title="">
