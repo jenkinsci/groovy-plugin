@@ -5,32 +5,21 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.ParametersAction;
-import hudson.remoting.Callable;
-import hudson.remoting.VirtualChannel;
 import hudson.tasks.Builder;
-import hudson.util.NullStream;
-import hudson.util.StreamTaskListener;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.servlet.ServletException;
 
 import net.sf.json.JSONObject;
 
@@ -40,7 +29,7 @@ import org.kohsuke.stapler.StaplerRequest;
 /**
  * A Builder for Groovy scripts.
  *
- * @author dvrzalik
+ * @author dvrzalik, vjuranek
  */
 public class Groovy extends AbstractGroovy {
     
@@ -53,6 +42,7 @@ public class Groovy extends AbstractGroovy {
 
     private String classPath;  //for user convenience when added more item into class path not have to deal with path separator
     
+    @DataBoundConstructor
     public Groovy(ScriptSource scriptSource, String groovyName, String parameters, 
             String scriptParameters, String properties, String javaOpts, String classPath) {
         super(scriptSource);
@@ -83,7 +73,7 @@ public class Groovy extends AbstractGroovy {
             return false;
         }
         try {
-            String[] cmd = buildCommandLine(build,script,launcher.isUnix());
+            String[] cmd = buildCommandLine(build,listener,script,launcher.isUnix());
 
             int result;
             try {
@@ -178,6 +168,7 @@ public class Groovy extends AbstractGroovy {
             return installations;
         }
 
+        /*
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) {
             try {
@@ -188,11 +179,13 @@ public class Groovy extends AbstractGroovy {
             } catch (ServletException ex) {
                 Logger.getLogger(Groovy.class.getName()).log(Level.SEVERE, null, ex);
                 return false;
-            }
+            } 
         }
-
+		*/
+		
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject data) throws FormException {
+        	
             ScriptSource source = getScriptSource(req, data);
             String instName = data.getString("groovyName");
             String params = data.getString("parameters");
@@ -200,8 +193,9 @@ public class Groovy extends AbstractGroovy {
             String scriptParams = data.getString("scriptParameters");
             String props = data.getString("properties");
             String javaOpts = data.getString("javaOpts");
-            
             return new Groovy(source, instName, params, scriptParams, props, javaOpts, classPath);
+            
+            //return (Groovy) req.bindJSON(clazz, data);
         }
 
         public static GroovyInstallation getGroovy(String groovyName) {
@@ -211,8 +205,14 @@ public class Groovy extends AbstractGroovy {
             }
           return null;
         }
+        
+        public void setInstallations(GroovyInstallation... installations) {                                                                    
+            this.installations = installations;                                                                                                
+            save();                                                                                                                            
+        }     
+        
     }
-
+/*
     public static final class GroovyInstallation implements Serializable {
 
         private final String name;
@@ -224,23 +224,23 @@ public class Groovy extends AbstractGroovy {
             this.home = home;
         }
 
-        /**
+        *//**
          * install directory.
-         */
+         *//*
         public String getHome() {
             return home;
         }
 
-        /**
+        *//**
          * Human readable display name.
-         */
+         *//*
         public String getName() {
             return name;
         }
 
-        /**
+        *//**
          * Gets the executable path of this groovy installation on the given target system.
-         */
+         *//*
         public String getExecutable(VirtualChannel channel) throws IOException, InterruptedException {
             return channel.call(new Callable<String, IOException>() {
 
@@ -268,9 +268,9 @@ public class Groovy extends AbstractGroovy {
             return new File(binDir, execName);            
         }
 
-        /**
+        *//**
          * Returns true if the executable exists.
-         */
+         *//*
         public boolean exists() {
             try {
                 return getExecutable(new LocalLauncher(new StreamTaskListener(new NullStream())).getChannel()) != null;
@@ -285,23 +285,26 @@ public class Groovy extends AbstractGroovy {
     }
 
 
-
+*/
     protected GroovyInstallation getGroovy() {
         return DescriptorImpl.getGroovy(groovyName);
     }
 
     //backward compatibility, default is Unix
     protected String[] buildCommandLine(AbstractBuild build,FilePath script) throws IOException, InterruptedException  {
-    	return buildCommandLine(build,script, true);
+    	return buildCommandLine(build, null, script, true);
     }
     
-    protected String[] buildCommandLine(AbstractBuild build,FilePath script, boolean isOnUnix) throws IOException, InterruptedException  {
+    protected String[] buildCommandLine(AbstractBuild build, BuildListener listener, FilePath script, boolean isOnUnix) throws IOException, InterruptedException  {
         ArrayList<String> list = new ArrayList<String>();
 
         String cmd = "groovy";//last hope in case of missing or not selected installation
 
         GroovyInstallation installation = getGroovy();
         if(installation != null) {
+        	EnvVars env = build.getEnvironment(listener); 
+        	installation = installation.forNode(Computer.currentComputer().getNode(), listener);                                                                      
+        	installation = installation.forEnvironment(env);   
             cmd = installation.getExecutable(script.getChannel());
         }
         list.add(cmd);
