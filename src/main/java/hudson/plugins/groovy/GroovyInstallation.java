@@ -28,38 +28,11 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 public class GroovyInstallation extends ToolInstallation implements EnvironmentSpecific<GroovyInstallation>, NodeSpecific<GroovyInstallation> {
 	
-	private final String name;
-    private final String home;
-
-    /*
-    public GroovyInstallation(String name, String home) {
-    	super(name,home,new LinkedList());
-        this.name = name;
-        this.home = home;
-    }
-	*/
     @DataBoundConstructor
     public GroovyInstallation(String name, String home, List<? extends ToolProperty<?>> properties){
     	super(name,home,properties);
-    	this.name = name;
-    	this.home = home;
-  
     }
     
-    /**
-     * install directory.
-     */
-    public String getHome() {
-        return home;
-    }
-
-    /**
-     * Human readable display name.
-     */
-    public String getName() {
-        return name;
-    }
-
     /**
      * Gets the executable path of this groovy installation on the given target system.
      */
@@ -88,21 +61,6 @@ public class GroovyInstallation extends ToolInstallation implements EnvironmentS
         }
         return new File(binDir, execName);            
     }
-
-    /**
-     * Returns true if the executable exists.
-     */
-    /*
-    public boolean exists() {
-        try {
-            return getExecutable(new LocalLauncher(new StreamTaskListener(new NullStream())).getChannel()) != null;
-        } catch (IOException e) {
-            return false;
-        } catch (InterruptedException e) {
-            return false;
-        }
-    }
-	*/
     
     public GroovyInstallation forEnvironment(EnvVars environment) {                                                                            
         return new GroovyInstallation(getName(), environment.expand(getHome()), getProperties().toList());                                    
@@ -120,16 +78,14 @@ public class GroovyInstallation extends ToolInstallation implements EnvironmentS
                                                                                                                                                
         @Override                                                                                                                              
         public String getDisplayName() {                                                                                                       
-            return "Groovy";//Messages.installer_displayName();                                                                                           
+            return "Groovy";                                                                                           
         }                                                                                                                                      
                                                                                                                                                
         @Override                                                                                                                              
         public List<? extends ToolInstaller> getDefaultInstallers() {                                                                          
             return Collections.singletonList(new GroovyInstaller(null));                                                                       
-        }                                                                                                                                      
-                                                                                                                                               
-        // for compatibility reasons, the persistence is done by GradleBuilder.DescriptorImpl                                                  
-                                                                                                                                               
+        }                                                                                                                                                                                                                                                                                                                                       
+                                                                                                                                              
         @Override                                                                                                                              
         public GroovyInstallation[] getInstallations() {                                                                                       
             return Hudson.getInstance().getDescriptorByType(Groovy.DescriptorImpl.class).getInstallations();                                   
@@ -141,8 +97,7 @@ public class GroovyInstallation extends ToolInstallation implements EnvironmentS
         }                                                                                                                                      
                                                                                                                                                
     }       
-    
-    
+        
     private static final long serialVersionUID = 1L;
 
 }

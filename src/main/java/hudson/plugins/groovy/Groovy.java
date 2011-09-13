@@ -15,7 +15,9 @@ import hudson.model.ParametersAction;
 import hudson.tasks.Builder;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -78,7 +80,7 @@ public class Groovy extends AbstractGroovy {
             int result;
             try {
                 Map<String,String> envVars = build.getEnvironment(listener);
-                GroovyInstallation installation = getGroovy();
+                hudson.plugins.groovy.GroovyInstallation installation = getGroovy();
                 if(installation != null) {
                     envVars.put("GROOVY_HOME", installation.getHome());
                 }
@@ -138,12 +140,27 @@ public class Groovy extends AbstractGroovy {
 
     	private boolean allowMacro;
     	
-        @CopyOnWrite
+    	@CopyOnWrite
         private volatile GroovyInstallation[] installations = new GroovyInstallation[0];
+    	
+        @CopyOnWrite
+        private volatile List<hudson.plugins.groovy.GroovyInstallation> installations2 = new ArrayList<hudson.plugins.groovy.GroovyInstallation>();
 
         DescriptorImpl() {
             super(Groovy.class);
             load();
+        }
+        
+        public Object readResolve(){
+        	// convert to new installation and drop the old one
+        	if(installations.length > 0){
+        		for(GroovyInstallation inst: installations){
+        			hudson.plugins.groovy.GroovyInstallation inst2 = new hudson.plugins.groovy.GroovyInstallation(inst.getName(),inst.getHome(),null);
+        			installations2.add(inst2);
+        		}
+        		installations = null;
+        	}
+        	return this;
         }
         
         public boolean getAllowMacro(){
@@ -164,28 +181,13 @@ public class Groovy extends AbstractGroovy {
             return "/plugin/groovy/project-config.html";
         }
 
-        public GroovyInstallation[] getInstallations() {
-            return installations;
+        public hudson.plugins.groovy.GroovyInstallation[] getInstallations() {
+        	hudson.plugins.groovy.GroovyInstallation[] installs = new hudson.plugins.groovy.GroovyInstallation[installations2.size()]; 
+            return installations2.toArray(installs);
         }
-
-        /*
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject formData) {
-            try {
-                installations = req.bindJSONToList(GroovyInstallation.class, req.getSubmittedForm().get("groovy")).toArray(new GroovyInstallation[0]);
-                allowMacro = req.getSubmittedForm().getBoolean("allowMacro");
-                save();
-                return true;
-            } catch (ServletException ex) {
-                Logger.getLogger(Groovy.class.getName()).log(Level.SEVERE, null, ex);
-                return false;
-            } 
-        }
-		*/
 		
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject data) throws FormException {
-        	
             ScriptSource source = getScriptSource(req, data);
             String instName = data.getString("groovyName");
             String params = data.getString("parameters");
@@ -194,25 +196,29 @@ public class Groovy extends AbstractGroovy {
             String props = data.getString("properties");
             String javaOpts = data.getString("javaOpts");
             return new Groovy(source, instName, params, scriptParams, props, javaOpts, classPath);
-            
-            //return (Groovy) req.bindJSON(clazz, data);
         }
 
-        public static GroovyInstallation getGroovy(String groovyName) {
-            for( GroovyInstallation i : DESCRIPTOR.getInstallations() ) {
+        public static hudson.plugins.groovy.GroovyInstallation getGroovy(String groovyName) {
+            for( hudson.plugins.groovy.GroovyInstallation i : DESCRIPTOR.getInstallations() ) {
                 if(groovyName!=null && i.getName().equals(groovyName))
               return i;
             }
           return null;
         }
         
-        public void setInstallations(GroovyInstallation... installations) {                                                                    
-            this.installations = installations;                                                                                                
+        public void setInstallations(hudson.plugins.groovy.GroovyInstallation... installations) {  
+            //this.installations = installations;
+        	this.installations2 = new ArrayList<hudson.plugins.groovy.GroovyInstallation>();
+        	for(hudson.plugins.groovy.GroovyInstallation install: installations){
+        		this.installations2.add(install);
+        	}
             save();                                                                                                                            
         }     
         
     }
-/*
+
+    
+    // Keep it for backward compatibility
     public static final class GroovyInstallation implements Serializable {
 
         private final String name;
@@ -224,69 +230,26 @@ public class Groovy extends AbstractGroovy {
             this.home = home;
         }
 
-        *//**
+        /**
          * install directory.
-         *//*
+         */
         public String getHome() {
             return home;
         }
 
-        *//**
+        /**
          * Human readable display name.
-         *//*
+         */
         public String getName() {
             return name;
         }
 
-        *//**
-         * Gets the executable path of this groovy installation on the given target system.
-         *//*
-        public String getExecutable(VirtualChannel channel) throws IOException, InterruptedException {
-            return channel.call(new Callable<String, IOException>() {
-
-                public String call() throws IOException {
-                    File exe = getExeFile("groovy");
-                    if (exe.exists()) {
-                        return exe.getPath();
-                    } else {
-                        throw new FileNotFoundException(exe.getPath() + " doesn't exist, please check your Groovy installation");
-                    }
-                }
-            });
-        }
-
-        private File getExeFile(String execName) {
-            String groovyHome = Util.replaceMacro(getHome(),EnvVars.masterEnvVars);
-            File binDir = new File(groovyHome, "bin/");
-            if (File.separatorChar == '\\') {                
-                if(new File(binDir, execName + ".exe").exists()) {
-                    execName += ".exe";
-                } else {
-                    execName += ".bat";
-                }
-            }
-            return new File(binDir, execName);            
-        }
-
-        *//**
-         * Returns true if the executable exists.
-         *//*
-        public boolean exists() {
-            try {
-                return getExecutable(new LocalLauncher(new StreamTaskListener(new NullStream())).getChannel()) != null;
-            } catch (IOException e) {
-                return false;
-            } catch (InterruptedException e) {
-                return false;
-            }
-        }
-
+      
         private static final long serialVersionUID = 1L;
     }
 
 
-*/
-    protected GroovyInstallation getGroovy() {
+    protected hudson.plugins.groovy.GroovyInstallation getGroovy() {
         return DescriptorImpl.getGroovy(groovyName);
     }
 
@@ -300,7 +263,7 @@ public class Groovy extends AbstractGroovy {
 
         String cmd = "groovy";//last hope in case of missing or not selected installation
 
-        GroovyInstallation installation = getGroovy();
+        hudson.plugins.groovy.GroovyInstallation installation = getGroovy();
         if(installation != null) {
         	EnvVars env = build.getEnvironment(listener); 
         	installation = installation.forNode(Computer.currentComputer().getNode(), listener);                                                                      
