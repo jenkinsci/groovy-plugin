@@ -108,7 +108,7 @@ public class Groovy extends AbstractGroovy {
                 
                 envVars.put("$PATH_SEPARATOR",":::");
                 
-
+                System.out.println("Groovy cmd" + cmd[0]);
                 result = launcher.launch().cmds(cmd).envs(envVars).stdout(listener).pwd(ws).join();
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
@@ -269,6 +269,11 @@ public class Groovy extends AbstractGroovy {
         	installation = installation.forNode(Computer.currentComputer().getNode(), listener);                                                                      
         	installation = installation.forEnvironment(env);   
             cmd = installation.getExecutable(script.getChannel());
+            //some misconfiguration, reverting back to default groovy cmd
+            if(null == cmd){
+            	cmd = "groovy";
+            	listener.getLogger().println("[GROVY WARNING] Groovy executable is NULL, please chekc your Groovy configuration, trying fallback 'groovy' instead.");
+            }
         }
         list.add(cmd);
 
