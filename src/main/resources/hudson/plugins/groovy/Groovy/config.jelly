@@ -24,7 +24,7 @@
       <f:entry title="Groovy parameters" help="/plugin/groovy/parameters.html" >
         <f:expandableTextbox name="groovy.parameters" type="text" value="${instance.parameters}" />
       </f:entry>
-      <f:entry title="Class path" help="/plugin/groovy/classPath.html" >
+      <f:entry title="Class path" help="/plugin/groovy/classpath.html" >
         <f:expandableTextbox name="groovy.classPath" value="${instance.classPath}" />
       </f:entry>
       <f:entry title="Script parameters" help="/plugin/groovy/script-parameters.html" >
