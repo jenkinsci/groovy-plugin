@@ -4,7 +4,19 @@
     <!-- <f:entry title="Groovy command">
         <f:textarea name="groovy.command" value="${instance.command}"/>       
     </f:entry> -->
-    
+
+    <j:if test="${not h.hasPermission(app.ADMINISTER)}">
+        <f:invisibleEntry>
+            <f:textbox name="groovy.secret" value="${instance.secret}" />
+        </f:invisibleEntry>
+        <f:entry >
+            <div class="warning">
+                Only Administrator can configure the System Groovy script to be executed.<br/>
+                Configuration is displayed for your information only, any change will be ignored.
+            </div>
+        </f:entry>
+    </j:if>
+
     <j:set var="instanceID" value="${descriptor.nextInstanceID()}" />
     <j:forEach var="d" items="${descriptor.scriptSources}" varStatus="loop">
       <f:radioBlock name="${instanceID}.scriptSource" help="${d.helpFile}" value="${loop.index}"
@@ -22,5 +34,7 @@
           <f:textbox name="groovy.classpath" value="${instance.classpath}" />
       </f:entry>
     </f:advanced>
+
+
     
 </j:jelly>
