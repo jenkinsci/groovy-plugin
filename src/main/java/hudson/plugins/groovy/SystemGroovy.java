@@ -1,19 +1,18 @@
 package hudson.plugins.groovy;
 
+import com.thoughtworks.xstream.XStream;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.Descriptor;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Hudson;
+import hudson.model.*;
 import hudson.security.ACL;
 import hudson.tasks.Builder;
 
 import java.io.IOException;
 
+import hudson.util.Secret;
+import hudson.util.XStream2;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
@@ -40,10 +39,19 @@ public class SystemGroovy extends AbstractGroovy {
         this.classpath = classpath;
     }
 
+    private static final XStream XSTREAM = new XStream2();
+    
+    /**
+     * @return SystemGroovy as an encrypted String
+     */
+    public String getSecret() {
+        return Secret.fromString(XSTREAM.toXML(this)).getEncryptedValue();
+    }
+
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         //Hudson.getInstance().checkPermission(Hudson.ADMINISTER); // WTF - always pass, executed as SYSTEM
-      
+
         CompilerConfiguration compilerConfig = new CompilerConfiguration();
         if(classpath != null) {
             compilerConfig.setClasspath(classpath);
@@ -61,7 +69,7 @@ public class SystemGroovy extends AbstractGroovy {
             if (output != null) {
                 listener.getLogger().println("Script returned: " + output);
             }
-            
+
             if (output instanceof Number) {
                 return ((Number) output).intValue() == 0;
             }
@@ -69,7 +77,7 @@ public class SystemGroovy extends AbstractGroovy {
         //No output. Suppose success.
         return true;
     }
-    
+
     @Override
     public Descriptor<Builder> getDescriptor() {
         return DESCRIPTOR;
@@ -78,7 +86,7 @@ public class SystemGroovy extends AbstractGroovy {
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public static final class DescriptorImpl extends AbstractGroovyDescriptor {
+    public static final class DescriptorImpl extends AbstractGroovyDescriptor  {
 
         DescriptorImpl() {
             super(SystemGroovy.class);
@@ -100,14 +108,20 @@ public class SystemGroovy extends AbstractGroovy {
         }
         
          @Override
-        public Builder newInstance(StaplerRequest req, JSONObject data) throws FormException {
-        	//don't allow unauthorized users to modify scripts
-        	Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-            ScriptSource source = getScriptSource(req, data);
-            String binds = data.getString("bindings");
-            String classp = data.getString("classpath");
-            return new SystemGroovy(source, binds, classp);
-         }
+        public SystemGroovy newInstance(StaplerRequest req, JSONObject data) throws FormException {
+
+             //don't allow unauthorized users to modify scripts
+            Authentication a = Hudson.getAuthentication();
+            if (Hudson.getInstance().getACL().hasPermission(a,Hudson.ADMINISTER)) {
+                ScriptSource source = getScriptSource(req, data);
+                String binds = data.getString("bindings");
+                String classp = data.getString("classpath");
+                return new SystemGroovy(source, binds, classp);
+            } else {
+                String secret = data.getString("secret");
+                return (SystemGroovy) XSTREAM.fromXML(Secret.decrypt(secret).getPlainText());
+            }
+        }
 
         @Override
         public String getHelpFile() {
