@@ -13,6 +13,7 @@ import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.ParametersAction;
 import hudson.tasks.Builder;
+import hudson.util.VariableResolver;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -87,7 +88,6 @@ public class Groovy extends AbstractGroovy {
 
                 for(Map.Entry<String,String> e : build.getBuildVariables().entrySet()){
                     envVars.put(e.getKey(),e.getValue());
-                    System.out.println("key:value: " + e.getKey() + " " + e.getValue());
                 }
 
                 if(properties != null) {
@@ -108,7 +108,11 @@ public class Groovy extends AbstractGroovy {
                 
                 envVars.put("$PATH_SEPARATOR",":::");
                 
-                System.out.println("Groovy cmd" + cmd[0]);
+                StringBuffer sb = new StringBuffer();
+                for(String c:cmd){
+                    sb.append(c);
+                    sb.append(" ");
+                }
                 result = launcher.launch().cmds(cmd).envs(envVars).stdout(listener).pwd(ws).join();
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
@@ -261,11 +265,16 @@ public class Groovy extends AbstractGroovy {
     protected String[] buildCommandLine(AbstractBuild build, BuildListener listener, FilePath script, boolean isOnUnix) throws IOException, InterruptedException  {
         ArrayList<String> list = new ArrayList<String>();
 
+        //prepare variable resolver - more efficient than calling env.expand(s)
+        EnvVars env = build.getEnvironment(listener);
+        env.overrideAll(build.getBuildVariables());
+        VariableResolver<String> vr = new VariableResolver.ByMap<String>(env);
+        
+        
         String cmd = "groovy";//last hope in case of missing or not selected installation
 
         hudson.plugins.groovy.GroovyInstallation installation = getGroovy();
         if(installation != null) {
-        	EnvVars env = build.getEnvironment(listener); 
         	installation = installation.forNode(Computer.currentComputer().getNode(), listener);                                                                      
         	installation = installation.forEnvironment(env);   
             cmd = installation.getExecutable(script.getChannel());
@@ -284,10 +293,10 @@ public class Groovy extends AbstractGroovy {
         	list.add("-cp");
         	// class path has to be one item, otherwise spaces are add around class path separator and build will fail
         	StringBuilder sb = new StringBuilder();  
-        	sb.append(tokens.nextToken());
+        	sb.append(Util.replaceMacro(tokens.nextToken(),vr));
             while(tokens.hasMoreTokens()) {
             	sb.append(pathSeparator);
-                sb.append(tokens.nextToken());
+                sb.append(Util.replaceMacro(tokens.nextToken(),vr));
             }
             list.add(sb.toString());
         }
@@ -296,7 +305,7 @@ public class Groovy extends AbstractGroovy {
         if(parameters != null) {
             StringTokenizer tokens = new StringTokenizer(parameters);
             while(tokens.hasMoreTokens()) {
-                list.add(tokens.nextToken());
+                list.add(Util.replaceMacro(tokens.nextToken(),vr));
             }
         }
 
@@ -308,9 +317,12 @@ public class Groovy extends AbstractGroovy {
             ParametersAction parameters = build.getAction(ParametersAction.class);
             while(tokens.hasMoreTokens()) {
             	String token = tokens.nextToken();
+            	//first replace parameter from parameterized build
             	if (parameters != null) {
                     token = parameters.substitute(build, token);
                 }
+            	//then replace evn vars
+            	token = Util.replaceMacro(token,vr);
                 list.add(token);
             }
         }
