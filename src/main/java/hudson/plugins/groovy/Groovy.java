@@ -218,7 +218,13 @@ public class Groovy extends AbstractGroovy {
         	}
             save();                                                                                                                            
         }     
-        
+
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
+            allowMacro = json.getBoolean("allowMacro");
+            save();
+            return true;
+        }
     }
 
     
