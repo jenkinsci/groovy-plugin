@@ -3,6 +3,7 @@ package hudson.plugins.groovy;
 import com.thoughtworks.xstream.XStream;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.*;
@@ -27,20 +28,20 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class SystemGroovy extends AbstractGroovy {
 
-    //initial variable bindings
-    String bindings;
-    String classpath;
-    transient Object output;
+    // initial variable bindings
+    private String bindings;
+    private String classpath;
+    private transient Object output;
 
+    private static final XStream XSTREAM = new XStream2();
+    
     @DataBoundConstructor
-    public SystemGroovy(ScriptSource scriptSource, String bindings,String classpath) {
+    public SystemGroovy(final ScriptSource scriptSource, final String bindings, final String classpath) {
         super(scriptSource);
         this.bindings = bindings;
         this.classpath = classpath;
     }
 
-    private static final XStream XSTREAM = new XStream2();
-    
     /**
      * @return SystemGroovy as an encrypted String
      */
@@ -125,10 +126,10 @@ public class SystemGroovy extends AbstractGroovy {
         	return false;
         }
         
-         @Override
+        @Override
         public SystemGroovy newInstance(StaplerRequest req, JSONObject data) throws FormException {
 
-             //don't allow unauthorized users to modify scripts
+            // don't allow unauthorized users to modify scripts
             Authentication a = Hudson.getAuthentication();
             if (Hudson.getInstance().getACL().hasPermission(a,Hudson.ADMINISTER)) {
                 ScriptSource source = getScriptSource(req, data);
