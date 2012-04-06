@@ -49,20 +49,37 @@ public class SystemGroovy extends AbstractGroovy {
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        //Hudson.getInstance().checkPermission(Hudson.ADMINISTER); // WTF - always pass, executed as SYSTEM
+    public boolean perform(final AbstractBuild<?, ?> build,
+                           final Launcher launcher,
+                           final BuildListener listener)
+        throws InterruptedException, IOException
+    {
+        // Hudson.getInstance().checkPermission(Hudson.ADMINISTER); // WTF - always pass, executed as SYSTEM
 
         CompilerConfiguration compilerConfig = new CompilerConfiguration();
-        if(classpath != null) {
+        if (classpath != null) {
             compilerConfig.setClasspath(classpath);
         }
-        //see RemotingDiagnostics.Script
-        ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
-        if (cl==null)       cl = Thread.currentThread().getContextClassLoader();
-        GroovyShell shell = new GroovyShell(cl,new Binding(parseProperties(bindings)),compilerConfig);
 
+        // see RemotingDiagnostics.Script
+        ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
+
+        if (cl == null) {
+            cl = Thread.currentThread().getContextClassLoader();
+        }
+
+        GroovyShell shell =
+            new GroovyShell(cl, new Binding(parseProperties(bindings)), compilerConfig);
+
+        shell.setVariable("build", build);
+        shell.setVariable("launcher", launcher);
+        shell.setVariable("listener", listener);
         shell.setVariable("out", listener.getLogger());
-        output = shell.evaluate(getScriptSource().getScriptStream(build.getWorkspace(),build,listener));
+
+        output = shell.evaluate(
+            getScriptSource().getScriptStream(build.getWorkspace(),build,listener)
+        );
+        
         if (output instanceof Boolean) {
             return (Boolean) output;
         } else {
@@ -74,7 +91,8 @@ public class SystemGroovy extends AbstractGroovy {
                 return ((Number) output).intValue() == 0;
             }
         }
-        //No output. Suppose success.
+
+        // No output. Suppose success.
         return true;
     }
 
