@@ -53,16 +53,24 @@ public class GroovyTokenMacro extends DataBoundTokenMacro {
 	}
 
 	@Override
-	public String evaluate(AbstractBuild<?, ?> context, TaskListener listener,String macroName) throws MacroEvaluationException, IOException,InterruptedException {
-		Groovy.DescriptorImpl decs = (Groovy.DescriptorImpl) Hudson.getInstance().getDescriptorOrDie(Groovy.class);
+	public String evaluate(
+		final AbstractBuild<?, ?> context,
+		final TaskListener listener,
+		final String macroName
+	) throws MacroEvaluationException, IOException, InterruptedException {
+		Groovy.DescriptorImpl decs =
+			(Groovy.DescriptorImpl) Hudson.getInstance().getDescriptorOrDie(Groovy.class);
+
 		if (decs.getAllowMacro()) {
 			StringScriptSource scriptSource = new StringScriptSource(script);
+
 			SystemGroovy systemGroovy = new SystemGroovy(scriptSource, "", null);
 			systemGroovy.perform(context, null, (BuildListener) listener);
+
 			Object output = systemGroovy.getOutput();
+			
 			return output != null ? output.toString() : "";
-		}
-		else{
+		} else {
 			return script;
 		}
 	}
