@@ -24,7 +24,7 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public abstract class AbstractGroovy extends Builder {
 
-    public ScriptSource scriptSource;
+    protected ScriptSource scriptSource;
 
     public AbstractGroovy(ScriptSource scriptSource) {
         this.scriptSource = scriptSource;
@@ -37,19 +37,27 @@ public abstract class AbstractGroovy extends Builder {
         }
 
         /**
-         * Exctrats ScriptSource from given form data
+         * Extracts ScriptSource from given form data.
          */
-        protected ScriptSource getScriptSource(StaplerRequest req, JSONObject data) throws FormException {
+        protected ScriptSource getScriptSource(
+            final StaplerRequest req,
+            final JSONObject data
+        ) throws FormException {
             Object scriptSourceObject = data.get("scriptSource");
+
             if (scriptSourceObject instanceof JSONArray) {
-                //Dunno why this happens. Let's fix the JSON object so that newInstanceFromRadioList() doesn't go mad.
+                // Dunno why this happens. Let's fix the JSON object so that
+                // newInstanceFromRadioList() doesn't go mad.
+
                 JSONArray scriptSourceJSONArray = (JSONArray) scriptSourceObject;
                 JSONObject scriptSourceJSONObject = new JSONObject();
                 Object nestedObject = scriptSourceJSONArray.get(1);
+
                 if (nestedObject instanceof JSONObject) {
-                    //command/file path
+                    // command/file path
                     scriptSourceJSONObject.putAll((JSONObject) nestedObject);
-                    //selected radio button index
+
+                    // selected radio button index
                     scriptSourceJSONObject.put("value", scriptSourceJSONArray.get(0));
 
                     data.put("scriptSource", scriptSourceJSONObject);
@@ -59,12 +67,12 @@ public abstract class AbstractGroovy extends Builder {
             return ScriptSource.SOURCES.newInstanceFromRadioList(data, "scriptSource");
         }
 
-        //shortcut
+        // shortcut
         public static DescriptorList<ScriptSource> getScriptSources() {
             return ScriptSource.SOURCES;
         }
 
-        //Used for grouping radio buttons together
+        // Used for grouping radio buttons together
         private AtomicInteger instanceCounter = new AtomicInteger(0);
 
         public int nextInstanceID() {
@@ -80,8 +88,11 @@ public abstract class AbstractGroovy extends Builder {
      * @return Parsed properties. Never null.
      * @throws java.io.IOException
      */
-    public static Properties parseProperties(String properties) throws IOException {
+    public static Properties parseProperties(final String properties)
+        throws IOException
+    {
         Properties props = new Properties();
+
         if (properties != null) {
             try {
                 props.load(new StringReader(properties));
@@ -89,6 +100,7 @@ public abstract class AbstractGroovy extends Builder {
                 props.load(new ByteArrayInputStream(properties.getBytes()));
             }
         }
+
         return props;
     }
 }

@@ -3,6 +3,7 @@ package hudson.plugins.groovy;
 import com.thoughtworks.xstream.XStream;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.*;
@@ -27,20 +28,20 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class SystemGroovy extends AbstractGroovy {
 
-    //initial variable bindings
-    String bindings;
-    String classpath;
-    transient Object output;
+    // initial variable bindings
+    private String bindings;
+    private String classpath;
+    private transient Object output;
 
+    private static final XStream XSTREAM = new XStream2();
+    
     @DataBoundConstructor
-    public SystemGroovy(ScriptSource scriptSource, String bindings,String classpath) {
+    public SystemGroovy(final ScriptSource scriptSource, final String bindings, final String classpath) {
         super(scriptSource);
         this.bindings = bindings;
         this.classpath = classpath;
     }
 
-    private static final XStream XSTREAM = new XStream2();
-    
     /**
      * @return SystemGroovy as an encrypted String
      */
@@ -49,20 +50,37 @@ public class SystemGroovy extends AbstractGroovy {
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        //Hudson.getInstance().checkPermission(Hudson.ADMINISTER); // WTF - always pass, executed as SYSTEM
+    public boolean perform(final AbstractBuild<?, ?> build,
+                           final Launcher launcher,
+                           final BuildListener listener)
+        throws InterruptedException, IOException
+    {
+        // Hudson.getInstance().checkPermission(Hudson.ADMINISTER); // WTF - always pass, executed as SYSTEM
 
         CompilerConfiguration compilerConfig = new CompilerConfiguration();
-        if(classpath != null) {
+        if (classpath != null) {
             compilerConfig.setClasspath(classpath);
         }
-        //see RemotingDiagnostics.Script
-        ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
-        if (cl==null)       cl = Thread.currentThread().getContextClassLoader();
-        GroovyShell shell = new GroovyShell(cl,new Binding(parseProperties(bindings)),compilerConfig);
 
+        // see RemotingDiagnostics.Script
+        ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
+
+        if (cl == null) {
+            cl = Thread.currentThread().getContextClassLoader();
+        }
+
+        GroovyShell shell =
+            new GroovyShell(cl, new Binding(parseProperties(bindings)), compilerConfig);
+
+        shell.setVariable("build", build);
+        shell.setVariable("launcher", launcher);
+        shell.setVariable("listener", listener);
         shell.setVariable("out", listener.getLogger());
-        output = shell.evaluate(getScriptSource().getScriptStream(build.getWorkspace(),build,listener));
+
+        output = shell.evaluate(
+            getScriptSource().getScriptStream(build.getWorkspace(),build,listener)
+        );
+        
         if (output instanceof Boolean) {
             return (Boolean) output;
         } else {
@@ -74,7 +92,8 @@ public class SystemGroovy extends AbstractGroovy {
                 return ((Number) output).intValue() == 0;
             }
         }
-        //No output. Suppose success.
+
+        // No output. Suppose success.
         return true;
     }
 
@@ -107,10 +126,10 @@ public class SystemGroovy extends AbstractGroovy {
         	return false;
         }
         
-         @Override
+        @Override
         public SystemGroovy newInstance(StaplerRequest req, JSONObject data) throws FormException {
 
-             //don't allow unauthorized users to modify scripts
+            // don't allow unauthorized users to modify scripts
             Authentication a = Hudson.getAuthentication();
             if (Hudson.getInstance().getACL().hasPermission(a,Hudson.ADMINISTER)) {
                 ScriptSource source = getScriptSource(req, data);
