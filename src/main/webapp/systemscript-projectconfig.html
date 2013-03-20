@@ -5,4 +5,13 @@
   <p>
       You need to be Administrator to set the groovy script to be executed. In other case, changes will be ignored.
   </p>
+  <p>
+      Predefined variables:
+  </p>
+  <dl>
+      <dt><code>build</code></dt><dd>The current <code>AbstractBuild</code>.</dd>
+      <dt><code>launcher</code></dt><dd>A <code>Launcher</code>.</dd>
+      <dt><code>listener</code></dt><dd>A <code>BuildListener</code>.</dd>
+      <dt><code>out</code></dt><dd>A <code>PrintStream</code> (<code>listener.logger</code>).</dd>
+  </dl>
 </div>
