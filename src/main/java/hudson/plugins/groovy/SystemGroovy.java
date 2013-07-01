@@ -14,6 +14,7 @@ import java.io.IOException;
 
 import hudson.util.Secret;
 import hudson.util.XStream2;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
@@ -120,7 +121,7 @@ public class SystemGroovy extends AbstractGroovy {
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType){
         	Authentication a = Hudson.getAuthentication();
-            if(Hudson.getInstance().getACL().hasPermission(a,Hudson.ADMINISTER)){
+            if(Hudson.getInstance().getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)){
             	return true;
             }
         	return false;
@@ -131,7 +132,7 @@ public class SystemGroovy extends AbstractGroovy {
 
             // don't allow unauthorized users to modify scripts
             Authentication a = Hudson.getAuthentication();
-            if (Hudson.getInstance().getACL().hasPermission(a,Hudson.ADMINISTER)) {
+            if (Hudson.getInstance().getACL().hasPermission(a,Hudson.RUN_SCRIPTS)) {
                 ScriptSource source = getScriptSource(req, data);
                 String binds = data.getString("bindings");
                 String classp = data.getString("classpath");
