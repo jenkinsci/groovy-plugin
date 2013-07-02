@@ -2,14 +2,16 @@ package hudson.plugins.groovy;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
+import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
-import hudson.model.Descriptor.FormException;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
 import net.sf.json.JSONObject;
-import org.codehaus.plexus.util.StringInputStream;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -29,7 +31,8 @@ public class StringScriptSource implements ScriptSource {
 
     @Override
     public InputStream getScriptStream(FilePath projectWorkspace) {
-        return new StringInputStream(command);
+        //return new StringInputStream(command);
+        return new ByteArrayInputStream(command.getBytes());
     }
     
     @Override
