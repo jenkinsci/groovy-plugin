@@ -31,7 +31,6 @@ public class StringScriptSource implements ScriptSource {
 
     @Override
     public InputStream getScriptStream(FilePath projectWorkspace) {
-        //return new StringInputStream(command);
         return new ByteArrayInputStream(command.getBytes());
     }
     
