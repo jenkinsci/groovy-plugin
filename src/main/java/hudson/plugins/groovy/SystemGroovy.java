@@ -11,6 +11,7 @@ import hudson.security.ACL;
 import hudson.tasks.Builder;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import hudson.util.Secret;
 import hudson.util.XStream2;
@@ -79,7 +80,7 @@ public class SystemGroovy extends AbstractGroovy {
         shell.setVariable("out", listener.getLogger());
 
         output = shell.evaluate(
-            getScriptSource().getScriptStream(build.getWorkspace(),build,listener)
+            new InputStreamReader(getScriptSource().getScriptStream(build.getWorkspace(), build, listener))
         );
         
         if (output instanceof Boolean) {
