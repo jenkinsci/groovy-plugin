@@ -1,6 +1,5 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry>
     <f:entry title="${%Groovy Version}">
       <select class="setting-input" name="groovy.groovyName">
         <option value="(Default)">(${%Default})
@@ -11,31 +10,26 @@
         </j:forEach>
       </select>
     </f:entry>
-    
-    <j:set var="instanceID" value="${descriptor.nextInstanceID()}" />
-    <j:forEach var="d" items="${descriptor.scriptSources}" varStatus="loop">
-      <f:radioBlock name="${instanceID}.scriptSource" help="${d.helpFile}" value="${loop.index}"
-        title="${d.displayName}" checked="${instance.scriptSource.descriptor==d}">
-        <st:include from="${d}" page="${d.configPage}" />
-      </f:radioBlock>
-    </j:forEach>
-    
+
+    <f:entry>
+      <f:hetero-radio field="scriptSource" descriptors="${descriptor.scriptSources}" />
+    </f:entry>
+
     <f:advanced>
-      <f:entry title="Groovy parameters" help="/plugin/groovy/parameters.html" >
-        <f:expandableTextbox name="groovy.parameters" type="text" value="${instance.parameters}" />
+      <f:entry title="Groovy parameters" help="/plugin/groovy/parameters.html" field="parameters">
+        <f:expandableTextbox />
       </f:entry>
-      <f:entry title="Class path" help="/plugin/groovy/classpath.html" >
-        <f:expandableTextbox name="groovy.classPath" value="${instance.classPath}" />
+      <f:entry title="Class path" help="/plugin/groovy/classpath.html" field="classPath" >
+        <f:expandableTextbox />
       </f:entry>
-      <f:entry title="Script parameters" help="/plugin/groovy/script-parameters.html" >
-        <f:expandableTextbox name="groovy.scriptParameters" value="${instance.scriptParameters}" />
+      <f:entry title="Script parameters" help="/plugin/groovy/script-parameters.html" field="scriptParameters">
+        <f:expandableTextbox />
       </f:entry>
-      <f:entry title="${%Properties}" help="/plugin/groovy/properties.html">
-        <f:textarea name="groovy.properties" value="${instance.properties}" />
+      <f:entry title="${%Properties}" help="/plugin/groovy/properties.html" field="properties">
+        <f:textarea />
       </f:entry>
-      <f:entry title="${%Java opts}" help="/plugin/groovy/javaOpts.html">
-        <f:textbox name="groovy.javaOpts" value="${instance.javaOpts}" />
+      <f:entry title="${%Java opts}" help="/plugin/groovy/javaOpts.html" field="javaOpts">
+        <f:textbox />
       </f:entry>
     </f:advanced>
-  </f:entry>
 </j:jelly>

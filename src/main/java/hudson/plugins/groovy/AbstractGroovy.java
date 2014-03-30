@@ -1,5 +1,7 @@
 package hudson.plugins.groovy;
 
+import hudson.DescriptorExtensionList;
+import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -64,12 +66,12 @@ public abstract class AbstractGroovy extends Builder {
                 }
             }
 
-            return ScriptSource.SOURCES.newInstanceFromRadioList(data, "scriptSource");
+            return ScriptSource.all().newInstanceFromRadioList(data, "scriptSource");
         }
 
         // shortcut
-        public static DescriptorList<ScriptSource> getScriptSources() {
-            return ScriptSource.SOURCES;
+        public static DescriptorExtensionList<ScriptSource, Descriptor<ScriptSource>> getScriptSources() {
+            return ScriptSource.all();
         }
 
         // Used for grouping radio buttons together
