@@ -20,7 +20,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * 
  * @author dvrzalik
  */
-public class FileScriptSource implements ScriptSource {
+public class FileScriptSource extends ScriptSource {
 
     private String scriptFile;
 
@@ -55,27 +55,13 @@ public class FileScriptSource implements ScriptSource {
         return getScriptFile(projectWorkspace,build,listener).read();
     }
     
-    public Descriptor<ScriptSource> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
     @Extension
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
     public static class DescriptorImpl extends Descriptor<ScriptSource> {
-
-        public DescriptorImpl() {
-            super(FileScriptSource.class);
-        }
 
         @Override
         public String getDisplayName() {
             return "Groovy script file";
         }
         
-        @Override
-        public ScriptSource newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return req.bindJSON(FileScriptSource.class, formData);
-        }
     }
 }

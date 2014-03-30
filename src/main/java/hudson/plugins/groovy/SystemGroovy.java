@@ -99,17 +99,11 @@ public class SystemGroovy extends AbstractGroovy {
         return true;
     }
 
-    @Override
-    public Descriptor<Builder> getDescriptor() {
-        return DESCRIPTOR;
-    }
 
     @Extension
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
     public static final class DescriptorImpl extends AbstractGroovyDescriptor  {
 
-        DescriptorImpl() {
+        public DescriptorImpl() {
             super(SystemGroovy.class);
             load();
         }
@@ -134,10 +128,7 @@ public class SystemGroovy extends AbstractGroovy {
             // don't allow unauthorized users to modify scripts
             Authentication a = Hudson.getAuthentication();
             if (Hudson.getInstance().getACL().hasPermission(a,Hudson.RUN_SCRIPTS)) {
-                ScriptSource source = getScriptSource(req, data);
-                String binds = data.getString("bindings");
-                String classp = data.getString("classpath");
-                return new SystemGroovy(source, binds, classp);
+                return (SystemGroovy) super.newInstance(req, data);
             } else {
                 String secret = data.getString("secret");
                 return (SystemGroovy) XSTREAM.fromXML(Secret.decrypt(secret).getPlainText());
