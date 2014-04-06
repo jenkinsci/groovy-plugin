@@ -1,47 +1,33 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-
-    <!-- <f:entry title="Groovy command">
-        <f:textarea name="groovy.command" value="${instance.command}"/>       
-    </f:entry> -->
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:g="/hudson/plugins/groovy/form">
 
     <j:if test="${not h.hasPermission(app.ADMINISTER)}">
         <f:invisibleEntry>
-            <f:textbox name="groovy.secret" value="${instance.secret}" />
+            <f:textbox name="groovy.secret" value="${instance.secret}"/>
         </f:invisibleEntry>
-        <f:entry >
+        <f:entry>
             <div class="warning">
-                Only Administrator can configure the System Groovy script to be executed.<br/>
+                Only Administrator can configure the System Groovy script to be executed.
+                <br/>
                 Configuration is displayed for your information only, any change will be ignored.
             </div>
         </f:entry>
     </j:if>
 
     <f:entry>
-        <f:hetero-radio field="scriptSource" descriptors="${descriptor.scriptSources}" />
+        <g:multi-hetero-radio field="scriptSource" descriptors="${descriptor.scriptSources}"
+                              id="${descriptor.nextInstanceID()}"/>
     </f:entry>
 
-    <!--<j:set var="instanceID" value="${descriptor.nextInstanceID()}" />-->
-    <!--<j:forEach var="d" items="${descriptor.scriptSources}" varStatus="loop">-->
-      <!--<f:radioBlock name="${instanceID}.scriptSource" help="${d.helpFile}" value="${loop.index}"-->
-        <!--title="${d.displayName}" checked="${instance.scriptSource.descriptor==d}">-->
-        <!--<st:include from="${d}" page="${d.configPage}" />-->
-        <!--<f:invisibleEntry>&lt;!&ndash; this tells Stapler which block is for which class &ndash;&gt;-->
-            <!--<input type="hidden" name="stapler-class" value="${d.clazz.name}" />-->
-        <!--</f:invisibleEntry>-->
-      <!--</f:radioBlock>-->
-    <!--</j:forEach>-->
-
     <f:advanced>
-      <f:entry title="${%Variable bindings}" help="/plugin/groovy/bindings.html" field="bindings">
-          <f:textarea />
-      </f:entry>
+        <f:entry title="${%Variable bindings}" help="/plugin/groovy/bindings.html" field="bindings">
+            <f:textarea/>
+        </f:entry>
 
-      <f:entry title="${%Classpath}" help="/plugin/groovy/classpath.html" field="classpath">
-          <f:textbox />
-      </f:entry>
+        <f:entry title="${%Classpath}" help="/plugin/groovy/classpath.html" field="classpath">
+            <f:textbox/>
+        </f:entry>
     </f:advanced>
 
-
-
 </j:jelly>
+
