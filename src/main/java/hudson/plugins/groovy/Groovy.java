@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -132,14 +133,7 @@ public class Groovy extends AbstractGroovy {
         }
     }
 
-    @Override
-    public Descriptor<Builder> getDescriptor() {
-        return DESCRIPTOR;
-    }
-
     @Extension
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
     public static final class DescriptorImpl extends AbstractGroovyDescriptor {
 
     	private boolean allowMacro;
@@ -150,7 +144,7 @@ public class Groovy extends AbstractGroovy {
         @CopyOnWrite
         private volatile List<hudson.plugins.groovy.GroovyInstallation> installations2 = new ArrayList<hudson.plugins.groovy.GroovyInstallation>();
 
-        DescriptorImpl() {
+        public DescriptorImpl() {
             super(Groovy.class);
             load();
         }
@@ -190,20 +184,8 @@ public class Groovy extends AbstractGroovy {
             return installations2.toArray(installs);
         }
 		
-        @Override
-        public Builder newInstance(StaplerRequest req, JSONObject data) throws FormException {
-            ScriptSource source = getScriptSource(req, data);
-            String instName = data.getString("groovyName");
-            String params = data.getString("parameters");
-            String classPath = data.getString("classPath").trim();
-            String scriptParams = data.getString("scriptParameters");
-            String props = data.getString("properties");
-            String javaOpts = data.getString("javaOpts");
-            return new Groovy(source, instName, params, scriptParams, props, javaOpts, classPath);
-        }
-
         public static hudson.plugins.groovy.GroovyInstallation getGroovy(String groovyName) {
-            for( hudson.plugins.groovy.GroovyInstallation i : DESCRIPTOR.getInstallations() ) {
+            for( hudson.plugins.groovy.GroovyInstallation i : ((DescriptorImpl) Jenkins.getInstance().getDescriptor(Groovy.class)).getInstallations()) {
                 if(groovyName!=null && i.getName().equals(groovyName))
               return i;
             }

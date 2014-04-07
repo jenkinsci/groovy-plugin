@@ -23,7 +23,7 @@ import org.kohsuke.stapler.QueryParameter;
  * 
  * @author dvrzalik
  */
-public class StringScriptSource implements ScriptSource {
+public class StringScriptSource extends ScriptSource {
 
     private String command;
 
@@ -57,16 +57,8 @@ public class StringScriptSource implements ScriptSource {
         return command;
     }
 
-    public Descriptor getDescriptor() {
-        return (DescriptorImpl) Jenkins.getInstance().getDescriptor(getClass());
-    }
-
     @Extension
     public static class DescriptorImpl extends Descriptor<ScriptSource> {
-
-        public DescriptorImpl() {
-            super(StringScriptSource.class);
-        }
 
         @Override
         public String getDisplayName() {

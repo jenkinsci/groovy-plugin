@@ -1,12 +1,10 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
          
-  <j:set var="instance" value="${instance.scriptSource}" />
   <f:entry field="command">
     <f:textarea checkMethod="post" codemirror-mode="clike" 
     codemirror-config="mode: 'text/x-groovy', lineNumbers: true, matchBrackets: true, onBlur: function(editor){editor.save()}"/>
   </f:entry>
-  <j:set var="descriptor" value="${instance.descriptor}" />
   <f:validateButton title="Check syntax" progress="Checking syntax ... " method="checkScript" with="command"/>
-  
+
 </j:jelly>
