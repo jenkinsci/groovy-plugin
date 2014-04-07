@@ -287,7 +287,7 @@ public class Groovy extends AbstractGroovy {
             //some misconfiguration, reverting back to default groovy cmd
             if(null == cmd){
             	cmd = "groovy";
-            	listener.getLogger().println("[GROOVY WARNING] Groovy executable is NULL, please chekc your Groovy configuration, trying fallback 'groovy' instead.");
+            	listener.getLogger().println("[GROOVY WARNING] Groovy executable is NULL, please check your Groovy configuration, trying fallback 'groovy' instead.");
             }
         }
         list.add(cmd);
