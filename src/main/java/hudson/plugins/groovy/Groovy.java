@@ -10,9 +10,7 @@ import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Computer;
-import hudson.model.Descriptor;
 import hudson.model.ParametersAction;
-import hudson.tasks.Builder;
 import hudson.util.VariableResolver;
 
 import java.io.IOException;
@@ -105,15 +103,9 @@ public class Groovy extends AbstractGroovy {
                     	javaOpts.append(" " + this.javaOpts);
                     
                     envVars.put("JAVA_OPTS", javaOpts.toString());
-                 }
-                
+                }
                 envVars.put("$PATH_SEPARATOR",":::");
                 
-                StringBuffer sb = new StringBuffer();
-                for(String c:cmd){
-                    sb.append(c);
-                    sb.append(" ");
-                }
                 result = launcher.launch().cmds(cmd.toArray(new String[] {})).envs(envVars).stdout(listener).pwd(ws).join();
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
