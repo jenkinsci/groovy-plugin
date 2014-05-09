@@ -97,7 +97,7 @@ public class Groovy extends AbstractGroovy {
                     Properties props = parseProperties(properties);
                     
                     for (Entry<Object,Object> entry : props.entrySet()) {
-                        cmd.add(1, "-D" + entry.getKey() + "=" + entry.getValue() + "");
+                        cmd.add(1, "-D" + entry.getKey() + "=" + entry.getValue());
                     }
 
                     //Add javaOpts at the end
