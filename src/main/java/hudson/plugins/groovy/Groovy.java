@@ -77,7 +77,7 @@ public class Groovy extends AbstractGroovy {
             return false;
         }
         try {
-            String[] cmd = buildCommandLine(build,listener,script,launcher.isUnix());
+            List<String> cmd = buildCommandLine(build,listener,script,launcher.isUnix());
 
             int result;
             try {
@@ -95,9 +95,9 @@ public class Groovy extends AbstractGroovy {
                     String origJavaOpts = build.getBuildVariables().get("JAVA_OPTS");
                     StringBuffer javaOpts = new StringBuffer((origJavaOpts != null) ? origJavaOpts : "");
                     Properties props = parseProperties(properties);
-
+                    
                     for (Entry<Object,Object> entry : props.entrySet()) {
-                        javaOpts.append(" -D" + entry.getKey() + "=" + entry.getValue());
+                        cmd.add(1, "-D" + entry.getKey() + "=" + entry.getValue());
                     }
 
                     //Add javaOpts at the end
@@ -114,7 +114,7 @@ public class Groovy extends AbstractGroovy {
                     sb.append(c);
                     sb.append(" ");
                 }
-                result = launcher.launch().cmds(cmd).envs(envVars).stdout(listener).pwd(ws).join();
+                result = launcher.launch().cmds(cmd.toArray(new String[] {})).envs(envVars).stdout(listener).pwd(ws).join();
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
                 e.printStackTrace( listener.fatalError("command execution failed") );
@@ -246,11 +246,11 @@ public class Groovy extends AbstractGroovy {
     }
 
     //backward compatibility, default is Unix
-    protected String[] buildCommandLine(AbstractBuild build,FilePath script) throws IOException, InterruptedException  {
+    protected List<String> buildCommandLine(AbstractBuild build,FilePath script) throws IOException, InterruptedException  {
     	return buildCommandLine(build, null, script, true);
     }
     
-    protected String[] buildCommandLine(AbstractBuild build, BuildListener listener, FilePath script, boolean isOnUnix) throws IOException, InterruptedException  {
+    protected List<String> buildCommandLine(AbstractBuild build, BuildListener listener, FilePath script, boolean isOnUnix) throws IOException, InterruptedException  {
         ArrayList<String> list = new ArrayList<String>();
 
         //prepare variable resolver - more efficient than calling env.expand(s)
@@ -315,7 +315,7 @@ public class Groovy extends AbstractGroovy {
             }
         }
 
-        return list.toArray(new String[] {});
+        return list;
 
     }
 
