@@ -75,7 +75,7 @@ public class SystemGroovy extends AbstractGroovy {
             new GroovyShell(cl, new Binding(parseProperties(bindings)), compilerConfig);
 
         shell.setVariable("build", build);
-        shell.setVariable("launcher", launcher);
+        if (launcher != null) shell.setVariable("launcher", launcher); // simple fix for: https://issues.jenkins-ci.org/browse/JENKINS-17171
         shell.setVariable("listener", listener);
         shell.setVariable("out", listener.getLogger());
 
