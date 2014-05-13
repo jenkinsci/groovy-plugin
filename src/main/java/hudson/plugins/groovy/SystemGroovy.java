@@ -76,9 +76,11 @@ public class SystemGroovy extends AbstractGroovy {
 
         shell.setVariable("build", build);
         if (launcher != null) 
-	    shell.setVariable("launcher", launcher); 
-        shell.setVariable("listener", listener);
-        shell.setVariable("out", listener.getLogger());
+	    shell.setVariable("launcher", launcher);
+        if (listener != null) { 
+	    shell.setVariable("listener", listener);
+	    shell.setVariable("out", listener.getLogger());
+	}
 
         output = shell.evaluate(
             new InputStreamReader(getScriptSource().getScriptStream(build.getWorkspace(), build, listener))
