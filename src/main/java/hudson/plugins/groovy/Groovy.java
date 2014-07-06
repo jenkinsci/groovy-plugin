@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.exec.CommandLine;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -282,10 +283,10 @@ public class Groovy extends AbstractGroovy {
         }
         
         //Add groovy parameters
-        if(parameters != null) {
-            StringTokenizer tokens = new StringTokenizer(parameters);
-            while(tokens.hasMoreTokens()) {
-                list.add(Util.replaceMacro(tokens.nextToken(),vr));
+        if(parameters != null && !parameters.isEmpty()) {
+            String[] args = parseGroovyCmdLine(parameters);
+            for(String arg : args) {
+                list.add(Util.replaceMacro(arg, vr));
             }
         }
 
@@ -309,6 +310,21 @@ public class Groovy extends AbstractGroovy {
 
         return list;
 
+    }
+    
+    /**
+     * Parse parameters to be passed as arguments to the groovy binary
+     * 
+     */
+    private String[] parseGroovyCmdLine(String line) {
+        CommandLine cmdLine = CommandLine.parse(line);
+        String[] parsedArgs = cmdLine.getArguments();
+        String[] args = new String[parsedArgs.length + 1];
+        args[0] = cmdLine.getExecutable(); //as we pass only arguments, this is actually the first argument
+        if(parsedArgs.length > 0) {
+            System.arraycopy(parsedArgs, 0, args, 1, parsedArgs.length);
+        }
+        return args;
     }
 
 
