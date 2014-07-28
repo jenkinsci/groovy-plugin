@@ -24,19 +24,18 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
- *  A Builder which executes system Groovy script in Hudson JVM (similar to HUDSON_URL/script).
+ * A Builder which executes system Groovy script in Hudson JVM (similar to HUDSON_URL/script).
  * 
  * @author dvrzalik
  */
 public class SystemGroovy extends AbstractGroovy {
 
-    // initial variable bindings
     private String bindings;
     private String classpath;
     private transient Object output;
 
     private static final XStream XSTREAM = new XStream2();
-    
+
     @DataBoundConstructor
     public SystemGroovy(final ScriptSource scriptSource, final String bindings, final String classpath) {
         super(scriptSource);
@@ -52,12 +51,8 @@ public class SystemGroovy extends AbstractGroovy {
     }
 
     @Override
-    public boolean perform(final AbstractBuild<?, ?> build,
-                           final Launcher launcher,
-                           final BuildListener listener)
-        throws InterruptedException, IOException
-    {
-        // Hudson.getInstance().checkPermission(Hudson.ADMINISTER); // WTF - always pass, executed as SYSTEM
+    public boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher, final BuildListener listener)
+            throws InterruptedException, IOException {
 
         CompilerConfiguration compilerConfig = new CompilerConfiguration();
         if (classpath != null) {
@@ -71,21 +66,19 @@ public class SystemGroovy extends AbstractGroovy {
             cl = Thread.currentThread().getContextClassLoader();
         }
 
-        GroovyShell shell =
-            new GroovyShell(cl, new Binding(parseProperties(bindings)), compilerConfig);
+        GroovyShell shell = new GroovyShell(cl, new Binding(parseProperties(bindings)), compilerConfig);
 
         shell.setVariable("build", build);
-        if (launcher != null) 
-	    shell.setVariable("launcher", launcher);
-        if (listener != null) { 
-	    shell.setVariable("listener", listener);
-	    shell.setVariable("out", listener.getLogger());
-	}
+        if (launcher != null)
+            shell.setVariable("launcher", launcher);
+        if (listener != null) {
+            shell.setVariable("listener", listener);
+            shell.setVariable("out", listener.getLogger());
+        }
 
-        output = shell.evaluate(
-            new InputStreamReader(getScriptSource().getScriptStream(build.getWorkspace(), build, listener))
-        );
-        
+        output = shell.evaluate(new InputStreamReader(getScriptSource().getScriptStream(build.getWorkspace(), build,
+                listener)));
+
         if (output instanceof Boolean) {
             return (Boolean) output;
         } else {
@@ -102,35 +95,34 @@ public class SystemGroovy extends AbstractGroovy {
         return true;
     }
 
-
     @Extension
-    public static final class DescriptorImpl extends AbstractGroovyDescriptor  {
+    public static final class DescriptorImpl extends AbstractGroovyDescriptor {
 
         public DescriptorImpl() {
             super(SystemGroovy.class);
             load();
         }
-        
+
         @Override
         public String getDisplayName() {
             return "Execute system Groovy script";
         }
-        
+
         @Override
-        public boolean isApplicable(Class<? extends AbstractProject> jobType){
-        	Authentication a = Hudson.getAuthentication();
-            if(Hudson.getInstance().getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)){
-            	return true;
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            Authentication a = Hudson.getAuthentication();
+            if (Hudson.getInstance().getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)) {
+                return true;
             }
-        	return false;
+            return false;
         }
-        
+
         @Override
         public SystemGroovy newInstance(StaplerRequest req, JSONObject data) throws FormException {
 
             // don't allow unauthorized users to modify scripts
             Authentication a = Hudson.getAuthentication();
-            if (Hudson.getInstance().getACL().hasPermission(a,Hudson.RUN_SCRIPTS)) {
+            if (Hudson.getInstance().getACL().hasPermission(a, Hudson.RUN_SCRIPTS)) {
                 return (SystemGroovy) super.newInstance(req, data);
             } else {
                 String secret = data.getString("secret");
@@ -144,21 +136,23 @@ public class SystemGroovy extends AbstractGroovy {
         }
     }
 
-    //---- Backward compatibility -------- //
-    
-    public enum BuilderType { COMMAND,FILE }
-    
+    // ---- Backward compatibility -------- //
+
+    public enum BuilderType {
+        COMMAND, FILE
+    }
+
     private String command;
-    
+
     private Object readResolve() {
-        if(command != null) {
+        if (command != null) {
             scriptSource = new StringScriptSource(command);
             command = null;
         }
 
         return this;
     }
-    
+
     public String getCommand() {
         return command;
     }
