@@ -25,7 +25,7 @@
         </f:entry>
 
         <f:entry title="${%Classpath}" help="/plugin/groovy/classpath.html" field="classpath">
-            <f:textbox/>
+            <f:expandableTextbox/>
         </f:entry>
     </f:advanced>
 
