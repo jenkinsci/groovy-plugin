@@ -4,16 +4,13 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.BuildListener;
-import hudson.model.Descriptor;
 import hudson.model.AbstractBuild;
+import hudson.model.Descriptor;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import net.sf.json.JSONObject;
-
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Groovy source based on given script file.

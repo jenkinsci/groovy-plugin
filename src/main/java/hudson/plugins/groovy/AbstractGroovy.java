@@ -2,10 +2,8 @@ package hudson.plugins.groovy;
 
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
-import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.util.DescriptorList;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

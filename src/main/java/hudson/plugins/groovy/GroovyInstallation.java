@@ -2,7 +2,6 @@ package hudson.plugins.groovy;
 
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.TaskListener;
@@ -15,11 +14,8 @@ import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
 import hudson.tools.ToolInstallation;
-import hudson.util.NullStream;
-import hudson.util.StreamTaskListener;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
