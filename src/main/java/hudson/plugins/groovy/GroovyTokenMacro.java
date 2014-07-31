@@ -24,15 +24,15 @@
 package hudson.plugins.groovy;
 
 import hudson.Extension;
-import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.model.Hudson;
 import hudson.model.TaskListener;
-import hudson.Launcher;
-import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
-import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import hudson.model.AbstractBuild;
+import hudson.model.Hudson;
 
 import java.io.IOException;
+
+import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
 /**
  * {@code GROOVY} token that evaluates groovy expressions.
