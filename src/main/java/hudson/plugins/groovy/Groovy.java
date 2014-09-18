@@ -284,7 +284,7 @@ public class Groovy extends AbstractGroovy {
         
         //Add groovy parameters
         if(parameters != null && !parameters.isEmpty()) {
-            String[] args = parseGroovyCmdLine(parameters);
+            String[] args = parseParams(parameters);
             for(String arg : args) {
                 list.add(Util.replaceMacro(arg, vr));
             }
@@ -293,18 +293,17 @@ public class Groovy extends AbstractGroovy {
         list.add(script.getRemote());
 
         //Add script parameters
-        if(scriptParameters != null) {
-            StringTokenizer tokens = new StringTokenizer(scriptParameters);
+        if(scriptParameters != null && !scriptParameters.isEmpty()) {
+            String[] params = parseParams(scriptParameters);
             ParametersAction parameters = build.getAction(ParametersAction.class);
-            while(tokens.hasMoreTokens()) {
-            	String token = tokens.nextToken();
+            for(String param : params) {
             	//first replace parameter from parameterized build
             	if (parameters != null) {
-                    token = parameters.substitute(build, token);
+                    param = parameters.substitute(build, param);
                 }
             	//then replace evn vars
-            	token = Util.replaceMacro(token,vr);
-                list.add(token);
+            	param = Util.replaceMacro(param,vr);
+                list.add(param);
             }
         }
 
@@ -316,7 +315,7 @@ public class Groovy extends AbstractGroovy {
      * Parse parameters to be passed as arguments to the groovy binary
      * 
      */
-    private String[] parseGroovyCmdLine(String line) {
+    private String[] parseParams(String line) {
         CommandLine cmdLine = CommandLine.parse(line);
         String[] parsedArgs = cmdLine.getArguments();
         String[] args = new String[parsedArgs.length + 1];
