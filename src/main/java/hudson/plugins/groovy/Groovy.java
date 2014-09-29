@@ -316,12 +316,13 @@ public class Groovy extends AbstractGroovy {
      * 
      */
     private String[] parseParams(String line) {
-        CommandLine cmdLine = CommandLine.parse(line);
+        //JENKINS-24870 CommandLine.getExecutable tries to fix file separators, so if the first param contains slashes, it can cause problems
+        //Adding some placeholder instead of executable
+        CommandLine cmdLine = CommandLine.parse("executable_placeholder " + line);  
         String[] parsedArgs = cmdLine.getArguments();
-        String[] args = new String[parsedArgs.length + 1];
-        args[0] = cmdLine.getExecutable(); //as we pass only arguments, this is actually the first argument
+        String[] args = new String[parsedArgs.length];
         if(parsedArgs.length > 0) {
-            System.arraycopy(parsedArgs, 0, args, 1, parsedArgs.length);
+            System.arraycopy(parsedArgs, 0, args, 0, parsedArgs.length);
         }
         return args;
     }

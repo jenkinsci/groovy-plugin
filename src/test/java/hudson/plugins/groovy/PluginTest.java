@@ -1,14 +1,13 @@
 package hudson.plugins.groovy;
 
 import static org.junit.Assert.assertTrue;
-
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Builder;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
@@ -61,6 +60,20 @@ public class PluginTest {
 
         j.assertEqualBeans(before, after, "groovyName,parameters,scriptParameters,properties,javaOpts,classPath");
         j.assertEqualBeans(before.getScriptSource(), after.getScriptSource(), "command");
+    }
+    
+    @Test
+    public void roundtripTestGroovyParams() throws Exception {
+        Groovy before = new Groovy(new StringScriptSource("println 'Test'"),"(Default)", "some 'param with spaces' and other params", "some other 'param with spaces' and other params", "some.property=true", "-Xmx1024m", "test.jar");
+        Groovy after = doRoundtrip(before, Groovy.class);
+        j.assertEqualBeans(before, after, "parameters,scriptParameters");
+    }
+    
+    @Test
+    public void roundtripTestGroovyParamsSlashes() throws Exception {
+        Groovy before = new Groovy(new StringScriptSource("println 'Test'"),"(Default)", "some 'param with spaces' and http://slashes/and c:\\backslashes", "some other 'param with spaces' and http://slashes/and c:\\backslashes", "some.property=true", "-Xmx1024m", "test.jar");
+        Groovy after = doRoundtrip(before, Groovy.class);
+        j.assertEqualBeans(before, after, "parameters,scriptParameters");
     }
 
     private <T extends Builder> T doRoundtrip(T before, Class<T> clazz) throws Exception {
