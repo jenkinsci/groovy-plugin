@@ -83,6 +83,7 @@ public class Groovy extends AbstractGroovy {
                 Map<String,String> envVars = build.getEnvironment(listener);
                 hudson.plugins.groovy.GroovyInstallation installation = getGroovy();
                 if(installation != null) {
+                    installation = installation.forNode(Computer.currentComputer().getNode(), listener);
                     envVars.put("GROOVY_HOME", installation.getHome());
                 }
 
