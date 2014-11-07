@@ -164,6 +164,7 @@ public class Groovy extends AbstractGroovy {
         }
 
         @Override
+        @SuppressWarnings("rawtypes")
         public boolean isApplicable(Class<? extends AbstractProject> jobType){
         	return true;
         }
@@ -240,11 +241,11 @@ public class Groovy extends AbstractGroovy {
     }
 
     //backward compatibility, default is Unix
-    protected List<String> buildCommandLine(AbstractBuild build,FilePath script) throws IOException, InterruptedException  {
+    protected List<String> buildCommandLine(AbstractBuild<?,?> build,FilePath script) throws IOException, InterruptedException  {
     	return buildCommandLine(build, null, script, true);
     }
     
-    protected List<String> buildCommandLine(AbstractBuild build, BuildListener listener, FilePath script, boolean isOnUnix) throws IOException, InterruptedException  {
+    protected List<String> buildCommandLine(AbstractBuild<?,?> build, BuildListener listener, FilePath script, boolean isOnUnix) throws IOException, InterruptedException  {
         ArrayList<String> list = new ArrayList<String>();
 
         //prepare variable resolver - more efficient than calling env.expand(s)

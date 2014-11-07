@@ -51,6 +51,7 @@ public abstract class ScriptSource implements Describable<ScriptSource> {
     public abstract InputStream getScriptStream(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException;
 
     @Override
+    @SuppressWarnings("unchecked")
     public Descriptor<ScriptSource> getDescriptor() {
         return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }

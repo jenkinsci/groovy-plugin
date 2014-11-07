@@ -109,7 +109,7 @@ public class SystemGroovy extends AbstractGroovy {
         return true;
     }
     
-    private List<String> parseClassPath(String classPath, VariableResolver vr) {
+    private List<String> parseClassPath(String classPath, VariableResolver<String> vr) {
         List<String> cp = new ArrayList<String>();
         StringTokenizer tokens = new StringTokenizer(classPath);
         while(tokens.hasMoreTokens()) {
@@ -132,6 +132,7 @@ public class SystemGroovy extends AbstractGroovy {
         }
 
         @Override
+        @SuppressWarnings("rawtypes")
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             Authentication a = Hudson.getAuthentication();
             if (Hudson.getInstance().getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)) {

@@ -34,7 +34,6 @@ public class GroovyInstallation extends ToolInstallation implements EnvironmentS
      */
     public String getExecutable(VirtualChannel channel) throws IOException, InterruptedException {
         return channel.call(new Callable<String, IOException>() {
-
             public String call() throws IOException {
                 File exe = getExeFile("groovy");
                 if (exe.exists()) {
@@ -42,6 +41,7 @@ public class GroovyInstallation extends ToolInstallation implements EnvironmentS
                 }
                 return null;
             }
+            private static final long serialVersionUID = 1L;
         });
     }
 
