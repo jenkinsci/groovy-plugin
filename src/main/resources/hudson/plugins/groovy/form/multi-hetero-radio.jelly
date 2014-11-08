@@ -38,13 +38,16 @@ THE SOFTWARE.
         <st:attribute name="id" use="required">
             Id of the radioBlock group.
         </st:attribute>
+        <st:attribute name="defaultDescriptor">
+            Default option to be used.
+        </st:attribute>
     </st:documentation>
 
     <f:prepareDatabinding/>
 
     <table style="width:100%">
         <j:set var="currentInstance" value="${instance[field]}"/>
-        <j:set var="currentDescriptor" value="${currentInstance.descriptor}"/>
+        <j:set var="currentDescriptor" value="${currentInstance.descriptor != null ? currentInstance.descriptor : defaultDescriptor}"/>
         <j:forEach var="d" items="${descriptors}" varStatus="loop">
             <f:radioBlock name="${id}.${field}" help="${d.helpFile}" value="${loop.index}"
                           title="${d.displayName}" checked="${currentDescriptor==d}">
