@@ -16,7 +16,8 @@
 
     <f:entry>
         <g:multi-hetero-radio field="scriptSource" descriptors="${descriptor.scriptSources}"
-                              id="${descriptor.nextInstanceID()}"/>
+                              id="${descriptor.nextInstanceID()}"
+                              defaultDescriptor="${app.getDescriptorByName('StringScriptSource')}" />
     </f:entry>
 
     <f:advanced>
