@@ -13,7 +13,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
-public class PluginTest {
+public class GroovyPluginTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
