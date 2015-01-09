@@ -1,0 +1,52 @@
+package hudson.plugins.groovy;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import hudson.model.Result;
+import hudson.model.FreeStyleProject;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.JenkinsRule;
+
+public class ClassPathTest {
+    
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+    
+    /**
+     * Tests that groovy build step accepts wild cards on class path
+     */
+    @Bug(26070)
+    @Test
+    public void testDirectoryOnClassPath() throws Exception {
+        final String testJar = "groovy-cp-test.jar";
+        final ScriptSource script = new StringScriptSource(
+                "def printCP(classLoader){\n "
+                + "  classLoader.getURLs().each {println \"$it\"}\n"
+                + "  if(classLoader.parent) {printCP(classLoader.parent)}\n"
+                + "}\n"
+                + "printCP(this.class.classLoader)");
+        Groovy g = new Groovy(script,"(Default)", "", "","", "", this.getClass().getResource("/lib").getPath() + "/*");
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(g);
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get(10,TimeUnit.SECONDS).getResult());
+        assertTrue(containsString(p.scheduleBuild2(0).get().getLog(100), testJar));
+    }
+    
+    private boolean containsString(List<String> input, String searchStr) {
+        boolean isPresent = false;
+        for(String str : input) {
+            if(str.contains(searchStr)) {
+                isPresent = true;
+                break;
+            }
+        }
+        return isPresent;
+    }
+    
+}
