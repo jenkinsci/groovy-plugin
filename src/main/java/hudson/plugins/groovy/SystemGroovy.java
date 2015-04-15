@@ -32,7 +32,7 @@ import com.thoughtworks.xstream.XStream;
 
 /**
  * A Builder which executes system Groovy script in Hudson JVM (similar to HUDSON_URL/script).
- * 
+ *
  * @author dvrzalik
  */
 public class SystemGroovy extends AbstractGroovy {
@@ -108,7 +108,7 @@ public class SystemGroovy extends AbstractGroovy {
         // No output. Suppose success.
         return true;
     }
-    
+
     private List<String> parseClassPath(String classPath, VariableResolver<String> vr) {
         List<String> cp = new ArrayList<String>();
         StringTokenizer tokens = new StringTokenizer(classPath);

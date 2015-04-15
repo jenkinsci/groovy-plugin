@@ -19,7 +19,7 @@ import org.kohsuke.stapler.StaplerRequest;
 /**
  * Shared functionality for Groovy builders
  * (nothing but script sources at the moment)
- * 
+ *
  * @author dvrzalik
  */
 public abstract class AbstractGroovy extends Builder {
@@ -79,11 +79,11 @@ public abstract class AbstractGroovy extends Builder {
             return instanceCounter.incrementAndGet();
         }
     }
-    
+
     public ScriptSource getScriptSource() {
         return scriptSource;
     }
-    
+
     /**
      * @return Parsed properties. Never null.
      * @throws java.io.IOException

@@ -1,7 +1,7 @@
 package hudson.plugins.groovy;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import hudson.model.Result;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Builder;
@@ -17,7 +17,7 @@ public class GroovyPluginTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
     public void testAllowTokenMacro() throws Exception {
         HtmlPage page = j.createWebClient().goTo("configure");
@@ -27,7 +27,7 @@ public class GroovyPluginTest {
         Groovy.DescriptorImpl descriptor = (Groovy.DescriptorImpl) j.jenkins.getDescriptor(Groovy.class);
         assertTrue(descriptor.getAllowMacro());
     }
-    
+
     //JENKINS-25392
     @Test
     public void testFailWhenScriptThrowsException() throws Exception {
@@ -36,7 +36,7 @@ public class GroovyPluginTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(g);
         assertEquals(Result.FAILURE, p.scheduleBuild2(0).get().getResult());
-        
+
     }
 
     @Test
@@ -74,14 +74,14 @@ public class GroovyPluginTest {
         j.assertEqualBeans(before, after, "groovyName,parameters,scriptParameters,properties,javaOpts,classPath");
         j.assertEqualBeans(before.getScriptSource(), after.getScriptSource(), "command");
     }
-    
+
     @Test
     public void roundtripTestGroovyParams() throws Exception {
         Groovy before = new Groovy(new StringScriptSource("println 'Test'"),"(Default)", "some 'param with spaces' and other params", "some other 'param with spaces' and other params", "some.property=true", "-Xmx1024m", "test.jar");
         Groovy after = doRoundtrip(before, Groovy.class);
         j.assertEqualBeans(before, after, "parameters,scriptParameters");
     }
-    
+
     @Test
     public void roundtripTestGroovyParamsSlashes() throws Exception {
         Groovy before = new Groovy(new StringScriptSource("println 'Test'"),"(Default)", "some 'param with spaces' and http://slashes/and c:\\backslashes", "some other 'param with spaces' and http://slashes/and c:\\backslashes", "some.property=true", "-Xmx1024m", "test.jar");
@@ -97,5 +97,4 @@ public class GroovyPluginTest {
         T after = p.getBuildersList().get(clazz);
         return after;
     }
-
 }
