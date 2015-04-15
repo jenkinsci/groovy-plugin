@@ -11,6 +11,8 @@ import java.io.StringReader;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nonnull;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -84,13 +86,8 @@ public abstract class AbstractGroovy extends Builder {
         return scriptSource;
     }
 
-    /**
-     * @return Parsed properties. Never null.
-     * @throws java.io.IOException
-     */
-    public static Properties parseProperties(final String properties)
-        throws IOException
-    {
+
+    public static @Nonnull Properties parseProperties(final String properties) throws IOException {
         Properties props = new Properties();
 
         if (properties != null) {
@@ -100,7 +97,6 @@ public abstract class AbstractGroovy extends Builder {
                 props.load(new ByteArrayInputStream(properties.getBytes()));
             }
         }
-
         return props;
     }
 }

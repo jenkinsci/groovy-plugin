@@ -17,7 +17,9 @@ import hudson.util.XStream2;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import jenkins.model.Jenkins;
@@ -80,7 +82,10 @@ public class SystemGroovy extends AbstractGroovy {
             cl = Thread.currentThread().getContextClassLoader();
         }
 
-        GroovyShell shell = new GroovyShell(cl, new Binding(parseProperties(bindings)), compilerConfig);
+        // Use HashMap as a backend for Binding as Hashtable does not accept nulls
+        Map<Object, Object> binding = new HashMap<Object, Object>();
+        binding.putAll(parseProperties(bindings));
+        GroovyShell shell = new GroovyShell(cl, new Binding(binding), compilerConfig);
 
         shell.setVariable("build", build);
         if (launcher != null)

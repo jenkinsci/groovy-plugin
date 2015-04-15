@@ -40,6 +40,13 @@ public class GroovyPluginTest {
     }
 
     @Test
+    public void assignNullToBindingVariables() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new SystemGroovy(new StringScriptSource("bindingVar = null"),"",""));
+        j.buildAndAssertSuccess(p);
+    }
+
+    @Test
     public void roundtripTestSystemGroovyStringScript() throws Exception {
         SystemGroovy before = new SystemGroovy(new StringScriptSource("println 'Test'"),"TEST=45","test.jar");
         SystemGroovy after = doRoundtrip(before, SystemGroovy.class);

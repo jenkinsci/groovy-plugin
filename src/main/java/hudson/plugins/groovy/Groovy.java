@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.StringTokenizer;
 
 import jenkins.model.Jenkins;
@@ -93,9 +92,7 @@ public class Groovy extends AbstractGroovy {
                 if(properties != null) {
                     String origJavaOpts = build.getBuildVariables().get("JAVA_OPTS");
                     StringBuffer javaOpts = new StringBuffer((origJavaOpts != null) ? origJavaOpts : "");
-                    Properties props = parseProperties(properties);
-
-                    for (Entry<Object,Object> entry : props.entrySet()) {
+                    for (Entry<Object, Object> entry : parseProperties(properties).entrySet()) {
                         cmd.add(1, "-D" + entry.getKey() + "=" + entry.getValue());
                     }
 
