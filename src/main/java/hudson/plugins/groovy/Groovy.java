@@ -186,10 +186,11 @@ public class Groovy extends AbstractGroovy {
 
         public void setInstallations(hudson.plugins.groovy.GroovyInstallation... installations) {
             //this.installations = installations;
-            this.installations2 = new ArrayList<hudson.plugins.groovy.GroovyInstallation>();
+            List<hudson.plugins.groovy.GroovyInstallation> installations2 = new ArrayList<hudson.plugins.groovy.GroovyInstallation>();
             for(hudson.plugins.groovy.GroovyInstallation install: installations){
-                this.installations2.add(install);
+                installations2.add(install);
             }
+            this.installations2 = installations2;
             save();
         }
 
