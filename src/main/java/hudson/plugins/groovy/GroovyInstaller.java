@@ -15,7 +15,7 @@ public class GroovyInstaller extends DownloadFromUrlInstaller {
     @Extension                                                                                                                                 
     public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<GroovyInstaller> {                                
         public String getDisplayName() {                                                                                                       
-            return "Install from http://groovy.codehaus.org";                                                                                                  
+            return "Install from Groovy website";                                                                                                  
         }                                                                                                                                      
                                                                                                                                                
         @Override                                                                                                                              
