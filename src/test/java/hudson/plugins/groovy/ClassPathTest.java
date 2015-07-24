@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -23,7 +22,7 @@ public class ClassPathTest {
     /**
      * Tests that groovy build step accepts wild cards on class path
      */
-    @Bug(26070)
+    @Issue("JENKINS-26070")
     @Test
     public void testDirectoryOnClassPath() throws Exception {
         final String testJar = "groovy-cp-test.jar";

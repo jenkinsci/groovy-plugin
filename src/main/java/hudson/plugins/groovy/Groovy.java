@@ -262,7 +262,7 @@ public class Groovy extends AbstractGroovy {
         list.add(cmd);
 
         //Add class path
-        if(classPath != null && !classPath.equals("")){
+        if(StringUtils.isNotBlank(classPath)) {
             String pathSeparator = isOnUnix ? ":" : ";";
             StringTokenizer tokens = new StringTokenizer(classPath);
             list.add("-cp");
@@ -284,17 +284,16 @@ public class Groovy extends AbstractGroovy {
         }
 
         //Add groovy parameters
-        if(parameters != null && !parameters.isEmpty()) {
+        if(StringUtils.isNotBlank(parameters)) {
             String[] args = parseParams(parameters);
             for(String arg : args) {
                 list.add(Util.replaceMacro(arg, vr));
             }
         }
-
         list.add(script.getRemote());
 
         //Add script parameters
-        if(scriptParameters != null && !scriptParameters.isEmpty()) {
+        if(StringUtils.isNotBlank(scriptParameters)) {
             String[] params = parseParams(scriptParameters);
             ParametersAction parameters = build.getAction(ParametersAction.class);
             for(String param : params) {
