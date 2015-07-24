@@ -237,6 +237,7 @@ public class Groovy extends AbstractGroovy {
     }
 
     //backward compatibility, default is Unix
+    @Deprecated
     protected List<String> buildCommandLine(AbstractBuild<?,?> build,FilePath script) throws IOException, InterruptedException  {
     	return buildCommandLine(build, null, script, true);
     }

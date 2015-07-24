@@ -43,7 +43,7 @@ public class FileScriptSource extends ScriptSource {
     }
 
     @Override
-    public InputStream getScriptStream(FilePath projectWorkspace) throws IOException {
+    public InputStream getScriptStream(FilePath projectWorkspace) throws IOException, InterruptedException {
         return getScriptFile(projectWorkspace).read();
     }
 

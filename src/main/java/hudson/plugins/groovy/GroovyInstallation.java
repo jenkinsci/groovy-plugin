@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class GroovyInstallation extends ToolInstallation implements EnvironmentSpecific<GroovyInstallation>, NodeSpecific<GroovyInstallation> {
@@ -41,6 +42,12 @@ public class GroovyInstallation extends ToolInstallation implements EnvironmentS
                 }
                 return null;
             }
+            
+            @Override
+            public void checkRoles(RoleChecker checker) throws SecurityException {
+                //currently no-op
+            }
+            
             private static final long serialVersionUID = 1L;
         });
     }
