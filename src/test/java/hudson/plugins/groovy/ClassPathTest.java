@@ -5,12 +5,14 @@ import static org.junit.Assert.assertTrue;
 import hudson.model.Result;
 import hudson.model.FreeStyleProject;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class ClassPathTest {
@@ -36,6 +38,23 @@ public class ClassPathTest {
         p.getBuildersList().add(g);
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get(10,TimeUnit.SECONDS).getResult());
         assertTrue(containsString(p.scheduleBuild2(0).get().getLog(100), testJar));
+    }
+    
+    @Issue("JENKINS-29577")
+    @Test
+    public void testClassPathAndProperties() throws Exception {
+        final String testJar = "groovy-cp-test.jar";
+        StringBuilder sb = new StringBuilder();
+        final ScriptSource script = new StringScriptSource(
+                sb.append("import App\n")
+                .append("println System.getProperty(\"aaa\")")
+                .toString()
+                );
+        Groovy g = new Groovy(script,"(Default)", "", "","aaa=\"bbb\"", "", this.getClass().getResource("/lib").getPath() + File.separator + testJar);
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(g);
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get(10,TimeUnit.SECONDS).getResult());
+        assertTrue(containsString(p.scheduleBuild2(0).get().getLog(100), "bbb"));
     }
     
     private boolean containsString(List<String> input, String searchStr) {

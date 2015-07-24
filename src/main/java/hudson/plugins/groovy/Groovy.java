@@ -25,6 +25,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.exec.CommandLine;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -89,20 +90,14 @@ public class Groovy extends AbstractGroovy {
                     envVars.put(e.getKey(),e.getValue());
                 }
 
-                if(properties != null) {
-                    String origJavaOpts = build.getBuildVariables().get("JAVA_OPTS");
-                    StringBuffer javaOpts = new StringBuffer((origJavaOpts != null) ? origJavaOpts : "");
-                    for (Entry<Object, Object> entry : parseProperties(properties).entrySet()) {
-                        cmd.add(1, "-D" + entry.getKey() + "=" + entry.getValue());
-                    }
-
-                    //Add javaOpts at the end
-                    if(this.javaOpts != null) //backward compatibility
-                        javaOpts.append(" " + this.javaOpts);
-
-                    envVars.put("JAVA_OPTS", javaOpts.toString());
-                }
-                envVars.put("$PATH_SEPARATOR",":::");
+                String origJavaOpts = build.getBuildVariables().get("JAVA_OPTS");
+                StringBuilder javaOpts = new StringBuilder((origJavaOpts != null) ? origJavaOpts : "");
+                //Add javaOpts at the end
+                if(this.javaOpts != null) //backward compatibility
+                    javaOpts.append(' ').append(this.javaOpts);
+                envVars.put("JAVA_OPTS", javaOpts.toString());
+            
+                envVars.put("$PATH_SEPARATOR",":::"); //TODO why??
 
                 result = launcher.launch().cmds(cmd.toArray(new String[] {})).envs(envVars).stdout(listener).pwd(ws).join();
             } catch (IOException e) {
@@ -279,6 +274,13 @@ public class Groovy extends AbstractGroovy {
                 sb.append(Util.replaceMacro(tokens.nextToken(),vr));
             }
             list.add(sb.toString());
+        }
+        
+        //Add java properties
+        if(StringUtils.isNotBlank(properties)) {
+            for (Entry<Object, Object> entry : parseProperties(properties).entrySet()) {
+                list.add("-D" + entry.getKey() + "=" + entry.getValue());
+            }
         }
 
         //Add groovy parameters
