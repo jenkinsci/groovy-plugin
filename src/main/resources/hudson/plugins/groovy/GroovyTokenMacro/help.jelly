@@ -1,0 +1,12 @@
+<j:jelly xmlns:j="jelly:core">
+  <dt>$${GROOVY,script = "code"}</dt>
+  <dd>
+    Executes Groovy code<br/>
+    <b>Example:</b><br/>
+    $${GROOVY,script = "return hudson.model.Hudson.instance.pluginManager.plugins"}<br/>
+    <b>Note:</b><br/>
+    By default, the support for token macro pressing is switched off and has to be switch on in global config page.<br/>
+    <b>Warning:</b><br/>
+    If token macro processing via Token Macro Plugin is allowed, the evaluation of macro is done in System Groovy, therefore any user can run arbitrary system script, regardless he has administer permission!
+  </dd>
+</j:jelly>
