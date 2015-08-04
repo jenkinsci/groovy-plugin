@@ -7,12 +7,11 @@ import hudson.model.EnvironmentSpecific;
 import hudson.model.TaskListener;
 import hudson.model.Hudson;
 import hudson.model.Node;
-import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.NodeSpecific;
-import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
+import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
 
 import java.io.File;
@@ -20,7 +19,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import org.jenkinsci.remoting.RoleChecker;
+import jenkins.security.MasterToSlaveCallable;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class GroovyInstallation extends ToolInstallation implements EnvironmentSpecific<GroovyInstallation>, NodeSpecific<GroovyInstallation> {
@@ -34,18 +34,13 @@ public class GroovyInstallation extends ToolInstallation implements EnvironmentS
      * Gets the executable path of this groovy installation on the given target system.
      */
     public String getExecutable(VirtualChannel channel) throws IOException, InterruptedException {
-        return channel.call(new Callable<String, IOException>() {
+        return channel.call(new MasterToSlaveCallable<String, IOException>() {
             public String call() throws IOException {
                 File exe = getExeFile("groovy");
                 if (exe.exists()) {
                     return exe.getPath();
                 }
                 return null;
-            }
-            
-            @Override
-            public void checkRoles(RoleChecker checker) throws SecurityException {
-                //currently no-op
             }
             
             private static final long serialVersionUID = 1L;
