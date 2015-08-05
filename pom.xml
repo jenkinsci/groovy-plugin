@@ -10,7 +10,7 @@
     <artifactId>groovy</artifactId>
     <packaging>hpi</packaging>
     <name>Groovy</name>
-    <version>1.27-SNAPSHOT</version>
+    <version>1.27</version>
     <url>http://wiki.jenkins-ci.org/display/JENKINS/Groovy+plugin</url>
 
     <developers>
@@ -24,7 +24,7 @@
         <connection>scm:git:git://github.com/jenkinsci/groovy-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/groovy-plugin.git</developerConnection>
         <url>http://github.com/jenkinsci/groovy-plugin</url>
-        <tag>HEAD</tag>
+        <tag>groovy-1.27</tag>
     </scm>
 
 
