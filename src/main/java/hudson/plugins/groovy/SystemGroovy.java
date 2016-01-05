@@ -33,7 +33,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import com.thoughtworks.xstream.XStream;
 
 /**
- * A Builder which executes system Groovy script in Hudson JVM (similar to HUDSON_URL/script).
+ * A Builder which executes system Groovy script in Jenkins JVM (similar to JENKINS_URL/script).
  *
  * @author dvrzalik
  */
@@ -76,7 +76,7 @@ public class SystemGroovy extends AbstractGroovy {
         }
 
         // see RemotingDiagnostics.Script
-        ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
+        ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
 
         if (cl == null) {
             cl = Thread.currentThread().getContextClassLoader();
@@ -139,8 +139,8 @@ public class SystemGroovy extends AbstractGroovy {
         @Override
         @SuppressWarnings("rawtypes")
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-            Authentication a = Hudson.getAuthentication();
-            if (Hudson.getInstance().getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)) {
+            Authentication a = Jenkins.getAuthentication();
+            if (Jenkins.getInstance().getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)) {
                 return true;
             }
             return false;
@@ -150,8 +150,8 @@ public class SystemGroovy extends AbstractGroovy {
         public SystemGroovy newInstance(StaplerRequest req, JSONObject data) throws FormException {
 
             // don't allow unauthorized users to modify scripts
-            Authentication a = Hudson.getAuthentication();
-            if (Hudson.getInstance().getACL().hasPermission(a, Hudson.RUN_SCRIPTS)) {
+            Authentication a = Jenkins.getAuthentication();
+            if (Jenkins.getInstance().getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)) {
                 return (SystemGroovy) super.newInstance(req, data);
             } else {
                 String secret = data.getString("secret");

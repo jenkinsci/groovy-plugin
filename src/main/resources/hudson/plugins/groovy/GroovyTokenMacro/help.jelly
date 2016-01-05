@@ -3,7 +3,7 @@
   <dd>
     Executes Groovy code<br/>
     <b>Example:</b><br/>
-    $${GROOVY,script = "return hudson.model.Hudson.instance.pluginManager.plugins"}<br/>
+    $${GROOVY,script = "return jenkins.model.Jenkins.instance.pluginManager.plugins"}<br/>
     <b>Note:</b><br/>
     By default, the support for token macro pressing is switched off and has to be switch on in global config page.<br/>
     <b>Warning:</b><br/>

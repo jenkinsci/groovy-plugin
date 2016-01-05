@@ -26,8 +26,8 @@ package hudson.plugins.groovy;
 import hudson.Extension;
 import hudson.model.BuildListener;
 import hudson.model.TaskListener;
+import jenkins.model.Jenkins;
 import hudson.model.AbstractBuild;
-import hudson.model.Hudson;
 
 import java.io.IOException;
 
@@ -59,7 +59,7 @@ public class GroovyTokenMacro extends DataBoundTokenMacro {
 		final String macroName
 	) throws MacroEvaluationException, IOException, InterruptedException {
 		Groovy.DescriptorImpl decs =
-			(Groovy.DescriptorImpl) Hudson.getInstance().getDescriptorOrDie(Groovy.class);
+			(Groovy.DescriptorImpl) Jenkins.getInstance().getDescriptorOrDie(Groovy.class);
 
 		if (decs.getAllowMacro()) {
 			StringScriptSource scriptSource = new StringScriptSource(script);
