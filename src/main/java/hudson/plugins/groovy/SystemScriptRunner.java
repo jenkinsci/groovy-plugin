@@ -39,10 +39,11 @@ public class SystemScriptRunner<T> {
 
     private void init(final String bindings) throws GroovyScriptExecutionException {
         configuration = new CompilerConfiguration();
-        configuration.setScriptBaseClass("hudson.plugins.groovy.AbstractScript");
         ImportCustomizer icz = new ImportCustomizer();
         icz.addStarImports("jenkins", "hudson", "jenkins.model", "hudson.model", "hudson.util", "hudson.remoting");
+        icz.addImports("hudson.plugins.groovy.AbstractScript", "hudson.plugins.groovy.SlaveTask");
         configuration.addCompilationCustomizers(icz);
+        configuration.setScriptBaseClass("hudson.plugins.groovy.AbstractScript");
 
         try {
             binding = new Binding(Utils.parseProperties(bindings));
