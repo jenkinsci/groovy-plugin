@@ -6,12 +6,18 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.ParametersAction;
 import hudson.util.VariableResolver;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -20,14 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
-
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * A Builder for Groovy scripts.
@@ -96,7 +94,7 @@ public class Groovy extends AbstractGroovy {
                 if(this.javaOpts != null) //backward compatibility
                     javaOpts.append(' ').append(this.javaOpts);
                 envVars.put("JAVA_OPTS", javaOpts.toString());
-            
+
                 envVars.put("$PATH_SEPARATOR",":::"); //TODO why??
 
                 result = launcher.launch().cmds(cmd.toArray(new String[] {})).envs(envVars).stdout(listener).pwd(ws).join();
@@ -275,10 +273,10 @@ public class Groovy extends AbstractGroovy {
             }
             list.add(sb.toString());
         }
-        
+
         //Add java properties
         if(StringUtils.isNotBlank(properties)) {
-            for (Entry<Object, Object> entry : parseProperties(properties).entrySet()) {
+            for (Entry<Object, Object> entry : Utils.parseProperties(properties).entrySet()) {
                 list.add("-D" + entry.getKey() + "=" + entry.getValue());
             }
         }

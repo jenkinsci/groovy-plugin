@@ -1,36 +1,29 @@
 package hudson.plugins.groovy;
 
+import com.thoughtworks.xstream.XStream;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Hudson;
+import hudson.model.BuildListener;
 import hudson.util.Secret;
 import hudson.util.VariableResolver;
 import hudson.util.XStream2;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-
 import org.acegisecurity.Authentication;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
-import com.thoughtworks.xstream.XStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A Builder which executes system Groovy script in Jenkins JVM (similar to JENKINS_URL/script).
@@ -69,7 +62,7 @@ public class SystemGroovy extends AbstractGroovy {
             env.overrideAll(build.getBuildVariables());
             VariableResolver<String> vr = new VariableResolver.ByMap<String>(env);
             if(classpath.contains("\n")) {
-                compilerConfig.setClasspathList(parseClassPath(classpath, vr));
+                compilerConfig.setClasspathList(Utils.parseClassPath(classpath, vr));
             } else {
                 compilerConfig.setClasspath(Util.replaceMacro(classpath,vr));
             }
@@ -84,7 +77,7 @@ public class SystemGroovy extends AbstractGroovy {
 
         // Use HashMap as a backend for Binding as Hashtable does not accept nulls
         Map<Object, Object> binding = new HashMap<Object, Object>();
-        binding.putAll(parseProperties(bindings));
+        binding.putAll(Utils.parseProperties(bindings));
         GroovyShell shell = new GroovyShell(cl, new Binding(binding), compilerConfig);
 
         shell.setVariable("build", build);
@@ -112,15 +105,6 @@ public class SystemGroovy extends AbstractGroovy {
 
         // No output. Suppose success.
         return true;
-    }
-
-    private List<String> parseClassPath(String classPath, VariableResolver<String> vr) {
-        List<String> cp = new ArrayList<String>();
-        StringTokenizer tokens = new StringTokenizer(classPath);
-        while(tokens.hasMoreTokens()) {
-            cp.add(Util.replaceMacro(tokens.nextToken(),vr));
-        }
-        return cp;
     }
 
     @Extension
