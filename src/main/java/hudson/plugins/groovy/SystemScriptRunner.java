@@ -6,6 +6,7 @@ import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.plugins.groovy.exceptions.GroovyScriptExecutionException;
+import hudson.util.VariableResolver;
 import jenkins.model.Jenkins;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -30,26 +31,38 @@ public class SystemScriptRunner<T> {
     BuildListener listener;
 
     public SystemScriptRunner(ScriptSource scriptSource, final AbstractBuild<?, ?> build, final BuildListener listener,
-                              final String bindings) throws GroovyScriptExecutionException {
+                              final String bindings, final String classpath) throws GroovyScriptExecutionException {
         this.scriptSource = scriptSource;
         this.build = build;
         this.listener = listener;
-        init(bindings);
+        init(bindings, classpath);
     }
 
-    private void init(final String bindings) throws GroovyScriptExecutionException {
+    private void init(final String bindings, final String classpath) throws GroovyScriptExecutionException {
         configuration = new CompilerConfiguration();
         ImportCustomizer icz = new ImportCustomizer();
         icz.addStarImports("jenkins", "hudson", "jenkins.model", "hudson.model", "hudson.util", "hudson.remoting");
         icz.addImports("hudson.plugins.groovy.AbstractScript", "hudson.plugins.groovy.SlaveTask");
         configuration.addCompilationCustomizers(icz);
         configuration.setScriptBaseClass("hudson.plugins.groovy.AbstractScript");
+        if (null != classpath) {
+            try {
+                EnvVars env = build.getEnvironment(listener);
+                env.overrideAll(build.getBuildVariables());
+                VariableResolver<String> vr = new VariableResolver.ByMap<>(env);
+                configuration.setClasspathList(Utils.parseClassPath(classpath, vr);
+            } catch (Exception e) {
+                throw new GroovyScriptExecutionException("Failed to set classpath to groovy configuration",
+                                                         e.getCause());
+            }
+
+        }
 
         try {
             binding = new Binding(Utils.parseProperties(bindings));
             binding.setVariable("jenkins", Jenkins.getInstance());
         } catch (IOException e) {
-            throw new GroovyScriptExecutionException("Failed to bind properties to groovy shell");
+            throw new GroovyScriptExecutionException("Failed to bind properties to groovy configuration", e.getCause());
         }
         cl = Jenkins.getInstance().pluginManager.uberClassLoader;
         if (null == cl) {
