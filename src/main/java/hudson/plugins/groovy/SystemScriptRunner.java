@@ -49,7 +49,7 @@ public class SystemScriptRunner<T> {
             try {
                 EnvVars env = build.getEnvironment(listener);
                 env.overrideAll(build.getBuildVariables());
-                VariableResolver<String> vr = new VariableResolver.ByMap<>(env);
+                VariableResolver<String> vr = new VariableResolver.ByMap<String>(env);
                 configuration.setClasspathList(Utils.parseClassPath(classpath, vr));
             } catch (Exception e) {
                 throw new GroovyScriptExecutionException("Failed to set classpath to groovy configuration",
