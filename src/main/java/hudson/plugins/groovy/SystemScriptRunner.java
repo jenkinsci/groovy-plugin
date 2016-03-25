@@ -61,17 +61,6 @@ public class SystemScriptRunner<T> {
         try {
             binding = new Binding(Utils.parseProperties(bindings));
             binding.setVariable("jenkins", Jenkins.getInstance());
-        } catch (IOException e) {
-            throw new GroovyScriptExecutionException("Failed to bind properties to groovy configuration", e.getCause());
-        }
-        cl = Jenkins.getInstance().pluginManager.uberClassLoader;
-        if (null == cl) {
-            cl = Thread.currentThread().getContextClassLoader();
-        }
-    }
-
-    public void addEnvVars() {
-        try {
             EnvVars envVars = build.getEnvironment(listener);
             envVars.overrideAll(build.getBuildVariables());
             for (Map.Entry<String, String> entry : envVars.entrySet()) {
@@ -81,8 +70,11 @@ public class SystemScriptRunner<T> {
             binding.setVariable("listener", listener);
             binding.setVariable("out", listener.getLogger());
         } catch (Exception e) {
-            listener.getLogger().println("Failed to bind environment variables to groovy shell");
-            listener.getLogger().println(e.getMessage());
+            throw new GroovyScriptExecutionException("Failed to bind properties to groovy configuration", e.getCause());
+        }
+        cl = Jenkins.getInstance().pluginManager.uberClassLoader;
+        if (null == cl) {
+            cl = Thread.currentThread().getContextClassLoader();
         }
     }
 
