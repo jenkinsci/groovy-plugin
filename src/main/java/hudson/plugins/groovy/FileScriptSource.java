@@ -9,6 +9,7 @@ import hudson.model.Descriptor;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -51,7 +52,22 @@ public class FileScriptSource extends ScriptSource {
     public InputStream getScriptStream(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
         return getScriptFile(projectWorkspace,build,listener).read();
     }
-    
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FileScriptSource that = (FileScriptSource) o;
+
+        return scriptFile != null ? scriptFile.equals(that.scriptFile) : that.scriptFile == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return scriptFile != null ? scriptFile.hashCode() : 0;
+    }
+
     @Extension
     public static class DescriptorImpl extends Descriptor<ScriptSource> {
 
@@ -59,6 +75,5 @@ public class FileScriptSource extends ScriptSource {
         public String getDisplayName() {
             return "Groovy script file";
         }
-        
     }
 }

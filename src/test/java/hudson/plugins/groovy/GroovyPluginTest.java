@@ -46,13 +46,14 @@ public class GroovyPluginTest {
         j.buildAndAssertSuccess(p);
     }
 
+    /// Roundtrip
+
     @Test
     public void roundtripTestSystemGroovyStringScript() throws Exception {
         SystemGroovy before = new SystemGroovy(new StringScriptSource("println 'Test'"),"TEST=45","test.jar");
         SystemGroovy after = doRoundtrip(before, SystemGroovy.class);
 
-        j.assertEqualBeans(before, after, "bindings,classpath");
-        j.assertEqualBeans(before.getScriptSource(), after.getScriptSource(), "command");
+        j.assertEqualBeans(before, after, "scriptSource,bindings,classpath");
     }
 
     @Test
@@ -60,8 +61,7 @@ public class GroovyPluginTest {
         SystemGroovy before = new SystemGroovy(new FileScriptSource("test.groovy"),"TEST=45","test.jar");
         SystemGroovy after = doRoundtrip(before, SystemGroovy.class);
 
-        j.assertEqualBeans(before, after, "bindings,classpath");
-        j.assertEqualBeans(before.getScriptSource(), after.getScriptSource(), "scriptFile");
+        j.assertEqualBeans(before, after, "scriptSource,bindings,classpath");
     }
 
     @Test
@@ -69,8 +69,7 @@ public class GroovyPluginTest {
         Groovy before = new Groovy(new FileScriptSource("test.groovy"),"(Default)", "-Xmx1024m", "TEST=45","some.property=true", "-Xmx1024m", "test.jar");
         Groovy after = doRoundtrip(before, Groovy.class);
 
-        j.assertEqualBeans(before, after, "groovyName,parameters,scriptParameters,properties,javaOpts,classPath");
-        j.assertEqualBeans(before.getScriptSource(), after.getScriptSource(), "scriptFile");
+        j.assertEqualBeans(before, after, "scriptSource,groovyName,parameters,scriptParameters,properties,javaOpts,classPath");
     }
 
     @Test
@@ -78,8 +77,7 @@ public class GroovyPluginTest {
         Groovy before = new Groovy(new StringScriptSource("println 'Test'"),"(Default)", "-Xmx1024m", "TEST=45","some.property=true", "-Xmx1024m", "test.jar");
         Groovy after = doRoundtrip(before, Groovy.class);
 
-        j.assertEqualBeans(before, after, "groovyName,parameters,scriptParameters,properties,javaOpts,classPath");
-        j.assertEqualBeans(before.getScriptSource(), after.getScriptSource(), "command");
+        j.assertEqualBeans(before, after, "scriptSource,groovyName,parameters,scriptParameters,properties,javaOpts,classPath");
     }
 
     @Test

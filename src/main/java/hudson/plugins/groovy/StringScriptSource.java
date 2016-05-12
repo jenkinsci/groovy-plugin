@@ -55,6 +55,22 @@ public class StringScriptSource extends ScriptSource {
         return command;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        StringScriptSource that = (StringScriptSource) o;
+
+        return command != null ? command.equals(that.command) : that.command == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return command != null ? command.hashCode() : 0;
+    }
+
     @Extension
     public static class DescriptorImpl extends Descriptor<ScriptSource> {
 
@@ -74,6 +90,5 @@ public class StringScriptSource extends ScriptSource {
                 return FormValidation.error(e.getMessage());
             }
         }
-
     }
 }
