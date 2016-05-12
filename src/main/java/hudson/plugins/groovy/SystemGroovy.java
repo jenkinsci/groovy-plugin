@@ -32,6 +32,8 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import com.thoughtworks.xstream.XStream;
 
+import javax.annotation.Nonnull;
+
 /**
  * A Builder which executes system Groovy script in Jenkins JVM (similar to JENKINS_URL/script).
  *
@@ -76,11 +78,7 @@ public class SystemGroovy extends AbstractGroovy {
         }
 
         // see RemotingDiagnostics.Script
-        ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
-
-        if (cl == null) {
-            cl = Thread.currentThread().getContextClassLoader();
-        }
+        @Nonnull ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
 
         // Use HashMap as a backend for Binding as Hashtable does not accept nulls
         Map<Object, Object> binding = new HashMap<Object, Object>();
@@ -110,7 +108,7 @@ public class SystemGroovy extends AbstractGroovy {
             }
         }
 
-        // No output. Suppose success.
+        // No error indication - success
         return true;
     }
 
