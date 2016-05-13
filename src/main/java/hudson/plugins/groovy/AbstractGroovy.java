@@ -4,19 +4,11 @@ import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.Nonnull;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.kohsuke.stapler.StaplerRequest;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Shared functionality for Groovy builders
@@ -87,16 +79,5 @@ public abstract class AbstractGroovy extends Builder {
     }
 
 
-    public static @Nonnull Properties parseProperties(final String properties) throws IOException {
-        Properties props = new Properties();
 
-        if (properties != null) {
-            try {
-                props.load(new StringReader(properties));
-            } catch (NoSuchMethodError err) {
-                props.load(new ByteArrayInputStream(properties.getBytes()));
-            }
-        }
-        return props;
-    }
 }
