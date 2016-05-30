@@ -32,6 +32,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import com.thoughtworks.xstream.XStream;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -43,7 +44,6 @@ public class SystemGroovy extends AbstractGroovy {
 
     private String bindings;
     private String classpath;
-    private transient Object output;
 
     private static final XStream XSTREAM = new XStream2();
 
@@ -65,6 +65,25 @@ public class SystemGroovy extends AbstractGroovy {
     public boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher, final BuildListener listener)
             throws InterruptedException, IOException {
 
+        Object output = run(build, listener, launcher);
+
+        if (output instanceof Boolean) {
+            return (Boolean) output;
+        } else {
+            if (output != null) {
+                listener.getLogger().println("Script returned: " + output);
+            }
+
+            if (output instanceof Number) {
+                return ((Number) output).intValue() == 0;
+            }
+        }
+
+        // No error indication - success
+        return true;
+    }
+
+    /*packahge*/ Object run(AbstractBuild<?, ?> build, BuildListener listener, @CheckForNull Launcher launcher) throws IOException, InterruptedException {
         CompilerConfiguration compilerConfig = new CompilerConfiguration();
         if (classpath != null) {
             EnvVars env = build.getEnvironment(listener);
@@ -93,23 +112,8 @@ public class SystemGroovy extends AbstractGroovy {
             shell.setVariable("out", listener.getLogger());
         }
 
-        output = shell.evaluate(new InputStreamReader(getScriptSource().getScriptStream(build.getWorkspace(), build,
+        return shell.evaluate(new InputStreamReader(getScriptSource().getScriptStream(build.getWorkspace(), build,
                 listener)));
-
-        if (output instanceof Boolean) {
-            return (Boolean) output;
-        } else {
-            if (output != null) {
-                listener.getLogger().println("Script returned: " + output);
-            }
-
-            if (output instanceof Number) {
-                return ((Number) output).intValue() == 0;
-            }
-        }
-
-        // No error indication - success
-        return true;
     }
 
     private List<String> parseClassPath(String classPath, VariableResolver<String> vr) {
@@ -185,9 +189,5 @@ public class SystemGroovy extends AbstractGroovy {
 
     public String getClasspath() {
         return classpath;
-    }
-
-    public Object getOutput() {
-        return output;
     }
 }

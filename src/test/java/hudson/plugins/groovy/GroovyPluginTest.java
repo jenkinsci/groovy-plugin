@@ -18,16 +18,6 @@ public class GroovyPluginTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    @Test
-    public void testAllowTokenMacro() throws Exception {
-        HtmlPage page = j.createWebClient().goTo("configure");
-        HtmlCheckBoxInput allowMacroCheckBox = page.getElementByName("_.allowMacro");
-        allowMacroCheckBox.setChecked(true);
-        j.submit(page.getFormByName("config"));
-        Groovy.DescriptorImpl descriptor = (Groovy.DescriptorImpl) j.jenkins.getDescriptor(Groovy.class);
-        assertTrue(descriptor.getAllowMacro());
-    }
-
     //JENKINS-25392
     @Test
     public void testFailWhenScriptThrowsException() throws Exception {
