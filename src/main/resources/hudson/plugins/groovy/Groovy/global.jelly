@@ -1,8 +1,7 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <f:section title="${%Groovy}">
-    <f:entry title="${%Allow token macro processing}" description="${%Possible security hole, read help!}" 
-    help="/plugin/groovy/help/global/allowMacro.html">
-    	<f:checkbox name="allowMacro" checked="${descriptor.allowMacro}" />
+    <f:entry title="${%Allow token macro processing}" description="${%Possible security hole, read help!}" field="allowMacro">
+    	<f:checkbox checked="${descriptor.allowMacro}" />
     </f:entry>
   </f:section>
 </j:jelly>

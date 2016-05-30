@@ -156,11 +156,6 @@ public class SystemGroovy extends AbstractGroovy {
                 return (SystemGroovy) XSTREAM.fromXML(Secret.decrypt(secret).getPlainText());
             }
         }
-
-        @Override
-        public String getHelpFile() {
-            return "/plugin/groovy/systemscript-projectconfig.html";
-        }
     }
 
     // ---- Backward compatibility -------- //

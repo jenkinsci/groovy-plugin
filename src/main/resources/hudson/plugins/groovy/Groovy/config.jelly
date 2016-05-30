@@ -1,8 +1,7 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:g="/hudson/plugins/groovy/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:g="/hudson/plugins/groovy/form">
 
-    <f:entry title="${%Groovy Version}" help="/plugin/groovy/groovy-version.html">
-        <select class="setting-input" name="groovy.groovyName">
+    <f:entry title="${%Groovy Version}" field="groovyName">
+        <select class="setting-input" name="_.groovyName">
             <option value="(Default)">(${%Default})
             </option>
             <j:forEach var="inst" items="${descriptor.installations}">
@@ -19,19 +18,19 @@
     </f:entry>
 
     <f:advanced>
-        <f:entry title="Groovy parameters" help="/plugin/groovy/parameters.html" field="parameters">
+        <f:entry title="Groovy parameters" field="parameters">
             <f:expandableTextbox/>
         </f:entry>
         <f:entry title="Class path" help="/plugin/groovy/classpath.html" field="classPath">
             <f:expandableTextbox/>
         </f:entry>
-        <f:entry title="Script parameters" help="/plugin/groovy/script-parameters.html" field="scriptParameters">
+        <f:entry title="Script parameters" field="scriptParameters">
             <f:expandableTextbox/>
         </f:entry>
-        <f:entry title="${%Properties}" help="/plugin/groovy/properties.html" field="properties">
+        <f:entry title="${%Properties}" field="properties">
             <f:textarea/>
         </f:entry>
-        <f:entry title="${%Java opts}" help="/plugin/groovy/javaOpts.html" field="javaOpts">
+        <f:entry title="${%Java opts}" field="javaOpts">
             <f:textbox/>
         </f:entry>
     </f:advanced>

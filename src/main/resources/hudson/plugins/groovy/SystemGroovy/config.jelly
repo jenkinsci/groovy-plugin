@@ -1,5 +1,4 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:g="/hudson/plugins/groovy/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:g="/hudson/plugins/groovy/form">
 
     <j:if test="${not h.hasPermission(app.ADMINISTER)}">
         <f:invisibleEntry>
@@ -21,7 +20,7 @@
     </f:entry>
 
     <f:advanced>
-        <f:entry title="${%Variable bindings}" help="/plugin/groovy/bindings.html" field="bindings">
+        <f:entry title="${%Variable bindings}" field="bindings">
             <f:textarea/>
         </f:entry>
 

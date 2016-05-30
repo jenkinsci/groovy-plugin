@@ -161,11 +161,6 @@ public class Groovy extends AbstractGroovy {
             return true;
         }
 
-        @Override
-        public String getHelpFile() {
-            return "/plugin/groovy/project-config.html";
-        }
-
         public hudson.plugins.groovy.GroovyInstallation[] getInstallations() {
             hudson.plugins.groovy.GroovyInstallation[] installs = new hudson.plugins.groovy.GroovyInstallation[installations2.size()];
             return installations2.toArray(installs);
