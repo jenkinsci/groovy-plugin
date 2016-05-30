@@ -1,6 +1,7 @@
-.classpath
-.project
-.settings
+.*
+!.gitignore
+*.iml
+
 target
 work
 tmp
