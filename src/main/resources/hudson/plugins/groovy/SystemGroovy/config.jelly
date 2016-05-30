@@ -1,4 +1,5 @@
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:g="/hudson/plugins/groovy/form">
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
 
     <j:if test="${not h.hasPermission(app.ADMINISTER)}">
         <f:invisibleEntry>
