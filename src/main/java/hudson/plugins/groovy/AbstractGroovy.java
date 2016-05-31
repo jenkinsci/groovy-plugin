@@ -9,7 +9,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
 
@@ -72,13 +71,6 @@ public abstract class AbstractGroovy extends Builder {
         // shortcut
         public static DescriptorExtensionList<ScriptSource, Descriptor<ScriptSource>> getScriptSources() {
             return ScriptSource.all();
-        }
-
-        // Used for grouping radio buttons together
-        private AtomicInteger instanceCounter = new AtomicInteger(0);
-
-        public int nextInstanceID() {
-            return instanceCounter.incrementAndGet();
         }
     }
 
