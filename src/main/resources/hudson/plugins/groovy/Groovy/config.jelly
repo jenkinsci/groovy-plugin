@@ -13,8 +13,7 @@
     </f:entry>
 
     <f:entry>
-        <g:multi-hetero-radio field="scriptSource" descriptors="${descriptor.scriptSources}"
-                              defaultDescriptor="${app.getDescriptor('hudson.plugins.groovy.StringScriptSource')}"/>
+        <f:dropdownDescriptorSelector field="scriptSource" descriptors="${descriptor.scriptSources}"/>
     </f:entry>
 
     <f:advanced>
