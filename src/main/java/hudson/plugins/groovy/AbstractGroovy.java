@@ -78,16 +78,11 @@ public abstract class AbstractGroovy extends Builder {
         return scriptSource;
     }
 
-
     public static @Nonnull Properties parseProperties(final String properties) throws IOException {
         Properties props = new Properties();
 
         if (properties != null) {
-            try {
-                props.load(new StringReader(properties));
-            } catch (NoSuchMethodError err) {
-                props.load(new ByteArrayInputStream(properties.getBytes()));
-            }
+            props.load(new StringReader(properties));
         }
         return props;
     }
