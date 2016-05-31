@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
+import org.apache.commons.io.Charsets;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -28,11 +29,6 @@ public class FileScriptSource extends ScriptSource {
     }
 
     @Override
-    public FilePath getScriptFile(FilePath projectWorkspace) {
-        return new FilePath(projectWorkspace, scriptFile);
-    }
-    
-    @Override
     public FilePath getScriptFile(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException{
     	EnvVars env = build.getEnvironment(listener);
     	String expandedScriptdFile = env.expand(this.scriptFile);
@@ -41,11 +37,6 @@ public class FileScriptSource extends ScriptSource {
 
     public String getScriptFile() {
       return scriptFile;
-    }
-
-    @Override
-    public InputStream getScriptStream(FilePath projectWorkspace) throws IOException, InterruptedException {
-        return getScriptFile(projectWorkspace).read();
     }
 
     @Override

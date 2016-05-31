@@ -19,16 +19,6 @@ import java.io.InputStream;
 public abstract class ScriptSource implements Describable<ScriptSource> {
 
     /**
-     * In the end, every script is a file...
-     *
-     * @param projectWorkspace Project workspace (useful when the source has to create temporary file)
-     * @return Path to the executed script file
-     * @throws java.io.IOException
-     * @throws java.lang.InterruptedException
-     */
-    public abstract FilePath getScriptFile(FilePath projectWorkspace) throws IOException, InterruptedException;
-
-    /**
      * Able to load script when script path contains parameters
      *
      * @param projectWorkspace Project workspace to create tmp file
@@ -41,14 +31,29 @@ public abstract class ScriptSource implements Describable<ScriptSource> {
     public abstract FilePath getScriptFile(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException;
 
     /**
-     * @return Stream containing the script
-     */
-    public abstract InputStream getScriptStream(FilePath projectWorkspace) throws IOException, InterruptedException;
-
-    /**
      * @return Stream containing the script, able to load script when script path contains parameters
      */
     public abstract InputStream getScriptStream(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException;
+
+    /**
+     * In the end, every script is a file...
+     *
+     * @param projectWorkspace Project workspace (useful when the source has to create temporary file)
+     * @return Path to the executed script file
+     * @deprecated Unused.
+     */
+    @Deprecated
+    public FilePath getScriptFile(FilePath projectWorkspace) throws IOException, InterruptedException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @deprecated Unused
+     */
+    @Deprecated
+    public InputStream getScriptStream(FilePath projectWorkspace) throws IOException, InterruptedException {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -59,5 +64,4 @@ public abstract class ScriptSource implements Describable<ScriptSource> {
     public static final DescriptorExtensionList<ScriptSource, Descriptor<ScriptSource>> all() {
         return Jenkins.getInstance().getDescriptorList(ScriptSource.class);
     }
-
 }

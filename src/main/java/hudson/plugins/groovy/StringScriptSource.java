@@ -12,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.io.Charsets;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -31,24 +32,15 @@ public class StringScriptSource extends ScriptSource {
     }
 
     @Override
-    public InputStream getScriptStream(FilePath projectWorkspace) {
-        return new ByteArrayInputStream(command.getBytes());
-    }
-
-    @Override
     public InputStream getScriptStream(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) {
-        return getScriptStream(projectWorkspace);
+        return new ByteArrayInputStream(command.getBytes(Charsets.UTF_8));
     }
 
     @Override
-    public FilePath getScriptFile(FilePath projectWorkspace) throws IOException, InterruptedException {
+    public FilePath getScriptFile(
+            FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener
+    ) throws IOException, InterruptedException {
         return projectWorkspace.createTextTempFile("hudson", ".groovy", command, true);
-    }
-
-    @Override
-    public FilePath getScriptFile(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener)
-            throws IOException, InterruptedException {
-        return getScriptFile(projectWorkspace);
     }
 
     public String getCommand() {
