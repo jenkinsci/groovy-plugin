@@ -90,7 +90,7 @@ public class SystemGroovy extends AbstractGroovy {
     }
 
     /*packahge*/ Object run(AbstractBuild<?, ?> build, BuildListener listener, @CheckForNull Launcher launcher) throws IOException, InterruptedException {
-        List<URL> classPathURLs = new ArrayList<>();
+        List<URL> classPathURLs = new ArrayList<URL>();
         if (classpath != null) {
             EnvVars env = build.getEnvironment(listener);
             env.overrideAll(build.getBuildVariables());
