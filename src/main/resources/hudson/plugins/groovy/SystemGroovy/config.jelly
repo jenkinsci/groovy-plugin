@@ -1,19 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
 
-    <j:if test="${not h.hasPermission(app.ADMINISTER)}">
-        <f:invisibleEntry>
-            <f:textbox name="groovy.secret" value="${instance.secret}"/>
-        </f:invisibleEntry>
-        <f:entry>
-            <div class="warning">
-                Only Administrator can configure the System Groovy script to be executed.
-                <br/>
-                Configuration is displayed for your information only, any change will be ignored.
-            </div>
-        </f:entry>
-    </j:if>
-
     <f:entry>
         <f:dropdownDescriptorSelector field="scriptSource" descriptors="${descriptor.scriptSources}"/>
     </f:entry>

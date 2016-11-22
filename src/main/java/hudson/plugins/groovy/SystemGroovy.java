@@ -9,10 +9,7 @@ import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Hudson;
-import hudson.util.Secret;
 import hudson.util.VariableResolver;
-import hudson.util.XStream2;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,14 +26,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-
-import org.acegisecurity.Authentication;
-import org.codehaus.groovy.control.CompilerConfiguration;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-
-import com.thoughtworks.xstream.XStream;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -51,20 +41,11 @@ public class SystemGroovy extends AbstractGroovy {
     private String bindings;
     private String classpath;
 
-    private static final XStream XSTREAM = new XStream2();
-
     @DataBoundConstructor
     public SystemGroovy(final ScriptSource scriptSource, final String bindings, final String classpath) {
         super(scriptSource);
         this.bindings = bindings;
         this.classpath = classpath;
-    }
-
-    /**
-     * @return SystemGroovy as an encrypted String
-     */
-    public String getSecret() {
-        return Secret.fromString(XSTREAM.toXML(this)).getEncryptedValue();
     }
 
     @Override
@@ -160,25 +141,9 @@ public class SystemGroovy extends AbstractGroovy {
         @Override
         @SuppressWarnings("rawtypes")
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-            Authentication a = Jenkins.getAuthentication();
-            if (Jenkins.getInstance().getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)) {
-                return true;
-            }
-            return false;
+            return true;
         }
 
-        @Override
-        public SystemGroovy newInstance(StaplerRequest req, JSONObject data) throws FormException {
-
-            // don't allow unauthorized users to modify scripts
-            Authentication a = Jenkins.getAuthentication();
-            if (Jenkins.getInstance().getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)) {
-                return (SystemGroovy) super.newInstance(req, data);
-            } else {
-                String secret = data.getString("secret");
-                return (SystemGroovy) XSTREAM.fromXML(Secret.decrypt(secret).getPlainText());
-            }
-        }
     }
 
     // ---- Backward compatibility -------- //
