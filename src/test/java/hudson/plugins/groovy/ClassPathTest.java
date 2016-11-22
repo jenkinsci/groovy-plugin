@@ -8,6 +8,7 @@ import hudson.model.FreeStyleProject;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.junit.Ignore;
 
 import org.junit.Rule;
@@ -27,12 +28,12 @@ public class ClassPathTest {
     @Test
     public void testWildcartOnClassPath() throws Exception {
         final String testJar = "groovy-cp-test.jar";
-        final ScriptSource script = new StringScriptSource(
+        final ScriptSource script = new StringScriptSource(new SecureGroovyScript(
                 "def printCP(classLoader){\n "
                 + "  classLoader.getURLs().each {println \"$it\"}\n"
                 + "  if(classLoader.parent) {printCP(classLoader.parent)}\n"
                 + "}\n"
-                + "printCP(this.class.classLoader)");
+                + "printCP(this.class.classLoader)", true, null));
         Groovy g = new Groovy(script,"(Default)", "", "","", "", this.getClass().getResource("/lib").getPath() + "/*");
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(g);
@@ -43,7 +44,7 @@ public class ClassPathTest {
     @Ignore("TODO not supported this way")
     @Test
     public void testClassDirectoryOnClassLoaderSystemGroovy() throws Exception {
-        final ScriptSource script = new StringScriptSource("App.main()");
+        final ScriptSource script = new StringScriptSource(new SecureGroovyScript("App.main()", true, null));
         SystemGroovy g = new SystemGroovy(script,"", "file://" + this.getClass().getResource("/classes").getPath() + "/");
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(g);
@@ -55,11 +56,11 @@ public class ClassPathTest {
     public void testClassPathAndProperties() throws Exception {
         final String testJar = "groovy-cp-test.jar";
         StringBuilder sb = new StringBuilder();
-        final ScriptSource script = new StringScriptSource(
+        final ScriptSource script = new StringScriptSource(new SecureGroovyScript(
                 sb.append("import App\n")
                 .append("println System.getProperty(\"aaa\")")
                 .toString()
-                );
+                , true, null));
         Groovy g = new Groovy(script,"(Default)", "", "","aaa=\"bbb\"", "", this.getClass().getResource("/lib").getPath() + File.separator + testJar);
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(g);

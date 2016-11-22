@@ -8,10 +8,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Objects;
-
-import org.apache.commons.io.Charsets;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -40,8 +37,8 @@ public class FileScriptSource extends ScriptSource {
     }
 
     @Override
-    public InputStream getScriptStream(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
-        return getScriptFile(projectWorkspace,build,listener).read();
+    public SecureGroovyScript getSecureGroovyScript(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
+        return new SecureGroovyScript(getScriptFile(projectWorkspace, build, listener).readToString(), true, null);
     }
 
     @Override

@@ -1,35 +1,22 @@
 package hudson.plugins.groovy;
 
 import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.util.VariableResolver;
-
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 
 /**
  * A Builder which executes system Groovy script in Jenkins JVM (similar to JENKINS_URL/script).
@@ -85,18 +72,25 @@ public class SystemGroovy extends AbstractGroovy {
         // Use HashMap as a backend for Binding as Hashtable does not accept nulls
         Map<Object, Object> binding = new HashMap<Object, Object>();
         binding.putAll(parseProperties(bindings));
-        GroovyShell shell = new GroovyShell(cl, new Binding(binding));
-
-        shell.setVariable("build", build);
-        if (launcher != null)
-            shell.setVariable("launcher", launcher);
-        if (listener != null) {
-            shell.setVariable("listener", listener);
-            shell.setVariable("out", listener.getLogger());
+        binding.put("build", build);
+        if (launcher != null) {
+            binding.put("launcher", launcher);
         }
-
-        InputStream scriptStream = getScriptSource().getScriptStream(build.getWorkspace(), build, listener);
-        return shell.evaluate(new InputStreamReader(scriptStream, Charset.defaultCharset()));
+        if (listener != null) {
+            binding.put("listener", listener);
+            binding.put("out", listener.getLogger());
+        }
+        try {
+            return getScriptSource().getSecureGroovyScript(build.getWorkspace(), build, listener).evaluate(cl, new Binding(binding));
+        } catch (IOException x) {
+            throw x;
+        } catch (InterruptedException x) {
+            throw x;
+        } catch (RuntimeException x) {
+            throw x;
+        } catch (Exception x) {
+            throw new IOException(x);
+        }
     }
 
     @Extension
@@ -131,7 +125,7 @@ public class SystemGroovy extends AbstractGroovy {
 
     private Object readResolve() {
         if (command != null) {
-            scriptSource = new StringScriptSource(command);
+            scriptSource = new StringScriptSource(new SecureGroovyScript(command, true, null));
             command = null;
         }
 

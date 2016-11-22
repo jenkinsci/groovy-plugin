@@ -26,6 +26,7 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -371,7 +372,7 @@ public class Groovy extends AbstractGroovy {
         if (type != null) {
             switch (type) {
                 case COMMAND:
-                    scriptSource = new StringScriptSource(command);
+                    scriptSource = new StringScriptSource(new SecureGroovyScript(command, true, null));
                     break;
                 case FILE:
                     scriptSource = new FileScriptSource(scriptFile);
