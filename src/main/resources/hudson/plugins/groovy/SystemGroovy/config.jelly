@@ -9,10 +9,6 @@
         <f:entry title="${%Variable bindings}" field="bindings">
             <f:textarea/>
         </f:entry>
-
-        <f:entry title="${%Classpath}" help="/plugin/groovy/classpath.html" field="classpath">
-            <f:expandableTextbox/>
-        </f:entry>
     </f:advanced>
 
 </j:jelly>

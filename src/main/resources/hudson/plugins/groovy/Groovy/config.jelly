@@ -20,7 +20,7 @@
         <f:entry title="Groovy parameters" field="parameters">
             <f:expandableTextbox/>
         </f:entry>
-        <f:entry title="Class path" help="/plugin/groovy/classpath.html" field="classPath">
+        <f:entry title="Class path" field="classPath">
             <f:expandableTextbox/>
         </f:entry>
         <f:entry title="Script parameters" field="scriptParameters">

@@ -64,7 +64,7 @@ public class GroovyTokenMacro extends DataBoundTokenMacro {
 		if (decs.getAllowMacro()) {
 			StringScriptSource scriptSource = new StringScriptSource(script);
 
-			SystemGroovy systemGroovy = new SystemGroovy(scriptSource, "", null);
+			SystemGroovy systemGroovy = new SystemGroovy(scriptSource, "");
 			Object output = systemGroovy.run(context, (BuildListener) listener, null);
 			
 			return output != null ? output.toString() : "";

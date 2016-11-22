@@ -39,13 +39,22 @@ import javax.annotation.Nonnull;
 public class SystemGroovy extends AbstractGroovy {
 
     private String bindings;
-    private String classpath;
+    @Deprecated
+    private transient String classpath;
 
     @DataBoundConstructor
+    public SystemGroovy(final ScriptSource scriptSource, final String bindings) {
+        super(scriptSource);
+        this.bindings = bindings;
+    }
+
+    @Deprecated
     public SystemGroovy(final ScriptSource scriptSource, final String bindings, final String classpath) {
         super(scriptSource);
         this.bindings = bindings;
-        this.classpath = classpath;
+        if (Util.fixEmpty(classpath) != null) {
+            throw new UnsupportedOperationException("classpath no longer supported"); // TODO convert StringScriptSource at least
+        }
     }
 
     @Override
@@ -71,21 +80,12 @@ public class SystemGroovy extends AbstractGroovy {
     }
 
     /*packahge*/ Object run(AbstractBuild<?, ?> build, BuildListener listener, @CheckForNull Launcher launcher) throws IOException, InterruptedException {
-        List<URL> classPathURLs = new ArrayList<URL>();
-        if (classpath != null) {
-            EnvVars env = build.getEnvironment(listener);
-            env.overrideAll(build.getBuildVariables());
-            VariableResolver<String> vr = new VariableResolver.ByMap<String>(env);
-            classPathURLs.addAll(parseClassPath(classpath, vr));
-        }
-
         // see RemotingDiagnostics.Script
         @Nonnull ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
-        URLClassLoader extendedClassLoader = new URLClassLoader(classPathURLs.toArray(new URL[classPathURLs.size()]), cl);
         // Use HashMap as a backend for Binding as Hashtable does not accept nulls
         Map<Object, Object> binding = new HashMap<Object, Object>();
         binding.putAll(parseProperties(bindings));
-        GroovyShell shell = new GroovyShell(extendedClassLoader, new Binding(binding));
+        GroovyShell shell = new GroovyShell(cl, new Binding(binding));
 
         shell.setVariable("build", build);
         if (launcher != null)
@@ -97,32 +97,6 @@ public class SystemGroovy extends AbstractGroovy {
 
         InputStream scriptStream = getScriptSource().getScriptStream(build.getWorkspace(), build, listener);
         return shell.evaluate(new InputStreamReader(scriptStream, Charset.defaultCharset()));
-    }
-
-    private URL pathToURL(String path){
-        try {
-            return new URL(path);
-        } catch (MalformedURLException x) {
-            try {
-                return new File(path).toURI().toURL();
-            } catch (MalformedURLException e) {
-                return null;
-            }
-        }
-    }
-
-    private List<URL> parseClassPath(String classPath, VariableResolver<String> vr) {
-        List<URL> cp = new ArrayList<URL>();
-        for (String path : classPath.split("\n")){
-            StringTokenizer tokens = new StringTokenizer(classPath);
-            while(tokens.hasMoreTokens()) {
-                URL url = pathToURL(Util.replaceMacro(tokens.nextToken(),vr));
-                if (url != null){
-                    cp.add(url);
-                }
-            }
-        }
-        return cp;
     }
 
     @Extension
@@ -152,7 +126,8 @@ public class SystemGroovy extends AbstractGroovy {
         COMMAND, FILE
     }
 
-    private String command;
+    @Deprecated
+    private transient String command;
 
     private Object readResolve() {
         if (command != null) {
@@ -163,15 +138,8 @@ public class SystemGroovy extends AbstractGroovy {
         return this;
     }
 
-    public String getCommand() {
-        return command;
-    }
-
     public String getBindings() {
         return bindings;
     }
 
-    public String getClasspath() {
-        return classpath;
-    }
 }
