@@ -8,8 +8,11 @@ import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -17,6 +20,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
 
 /**
  * A Builder which executes system Groovy script in Jenkins JVM (similar to JENKINS_URL/script).
@@ -116,17 +121,28 @@ public class SystemGroovy extends AbstractGroovy {
 
     // ---- Backward compatibility -------- //
 
-    public enum BuilderType {
-        COMMAND, FILE
-    }
-
     @Deprecated
     private transient String command;
 
-    private Object readResolve() {
+    @SuppressWarnings("deprecation")
+    private Object readResolve() throws Exception {
         if (command != null) {
-            scriptSource = new StringScriptSource(new SecureGroovyScript(command, true, null));
+            scriptSource = new StringScriptSource(new SecureGroovyScript(command, false, null).configuring(ApprovalContext.create()));
             command = null;
+        } else if (scriptSource instanceof StringScriptSource) {
+            StringScriptSource sss = (StringScriptSource) scriptSource;
+            if (sss.command != null) {
+                List<ClasspathEntry> classpathEntries = new ArrayList<ClasspathEntry>();
+                if (classpath != null) {
+                    StringTokenizer tokens = new StringTokenizer(classpath);
+                    while (tokens.hasMoreTokens()) {
+                        classpathEntries.add(new ClasspathEntry(tokens.nextToken()));
+                    }
+                }
+                scriptSource = new StringScriptSource(new SecureGroovyScript(sss.command, false, classpathEntries).configuring(ApprovalContext.create()));
+            }
+        } else if (scriptSource instanceof FileScriptSource && Util.fixEmpty(classpath) != null) {
+            throw new UnsupportedOperationException("classpath no longer supported in conjunction with Groovy script file source");
         }
 
         return this;
