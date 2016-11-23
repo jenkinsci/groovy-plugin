@@ -378,6 +378,11 @@ public class Groovy extends AbstractGroovy {
                     scriptSource = new FileScriptSource(scriptFile);
                     break;
             }
+        } else if (scriptSource instanceof StringScriptSource) {
+            StringScriptSource sss = (StringScriptSource) scriptSource;
+            if (sss.command != null) {
+                scriptSource = new StringScriptSource(new SecureGroovyScript(sss.command, true, null));
+            }
         }
 
         type = null;
