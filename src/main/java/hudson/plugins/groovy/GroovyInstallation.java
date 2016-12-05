@@ -86,12 +86,20 @@ public class GroovyInstallation extends ToolInstallation implements EnvironmentS
 
         @Override
         public GroovyInstallation[] getInstallations() {
-            return Jenkins.getInstance().getDescriptorByType(Groovy.DescriptorImpl.class).getInstallations();
+            Jenkins jenkins = Jenkins.getInstance();
+            if (jenkins == null ) {
+                throw new IllegalStateException("Jenkins instance is null - Jenkins is shutting down?");
+            }
+            
+            return jenkins.getDescriptorByType(Groovy.DescriptorImpl.class).getInstallations();
         }
 
         @Override
         public void setInstallations(GroovyInstallation... installations) {
-            Jenkins.getInstance().getDescriptorByType(Groovy.DescriptorImpl.class).setInstallations(installations);
+            Jenkins jenkins = Jenkins.getInstance();
+            if (jenkins != null) {
+                jenkins.getDescriptorByType(Groovy.DescriptorImpl.class).setInstallations(installations);
+            }
         }
 
     }

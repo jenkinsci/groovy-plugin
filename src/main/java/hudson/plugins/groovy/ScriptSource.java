@@ -39,10 +39,20 @@ public abstract class ScriptSource implements Describable<ScriptSource> {
     @Override
     @SuppressWarnings("unchecked")
     public Descriptor<ScriptSource> getDescriptor() {
-        return Jenkins.getInstance().getDescriptorOrDie(getClass());
+        Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins == null ) {
+            throw new IllegalStateException("Jenkins instance is null - Jenkins is shutting down?");
+        }
+        
+        return jenkins.getDescriptorOrDie(getClass());
     }
 
     public static final DescriptorExtensionList<ScriptSource, Descriptor<ScriptSource>> all() {
-        return Jenkins.getInstance().getDescriptorList(ScriptSource.class);
+        Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins == null ) {
+            throw new IllegalStateException("Jenkins instance is null - Jenkins is shutting down?");
+        }
+        
+        return jenkins.getDescriptorList(ScriptSource.class);
     }
 }

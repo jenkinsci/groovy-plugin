@@ -16,7 +16,6 @@
     <properties>
         <jenkins.version>1.580.3</jenkins.version>
         <java.level>6</java.level>
-        <findbugs.failOnError>false</findbugs.failOnError> <!-- TODO fix all findbub failures! -->
     </properties>
 
     <developers>

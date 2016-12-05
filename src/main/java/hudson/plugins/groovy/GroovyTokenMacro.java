@@ -54,13 +54,14 @@ public class GroovyTokenMacro extends DataBoundTokenMacro {
 	}
 
 	@Override
-	public String evaluate(
-		final AbstractBuild<?, ?> context,
-		final TaskListener listener,
-		final String macroName
-	) throws MacroEvaluationException, IOException, InterruptedException {
-		Groovy.DescriptorImpl decs =
-			(Groovy.DescriptorImpl) Jenkins.getInstance().getDescriptorOrDie(Groovy.class);
+	public String evaluate(final AbstractBuild<?, ?> context, final TaskListener listener, final String macroName) 
+	        throws MacroEvaluationException, IOException, InterruptedException {
+	    Jenkins jenkins = Jenkins.getInstance();
+	    if (jenkins == null ) {
+	        throw new IllegalStateException("Jenkins instance is null - Jenkins is shutting down?");
+	    }
+	    
+	    Groovy.DescriptorImpl decs = (Groovy.DescriptorImpl) jenkins.getDescriptorOrDie(Groovy.class);
 
 		if (decs.getAllowMacro()) {
 			StringScriptSource scriptSource = new StringScriptSource(new SecureGroovyScript(script, true, null));

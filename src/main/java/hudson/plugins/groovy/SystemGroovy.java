@@ -72,8 +72,11 @@ public class SystemGroovy extends AbstractGroovy {
     }
 
     /*packahge*/ Object run(AbstractBuild<?, ?> build, BuildListener listener, @CheckForNull Launcher launcher) throws IOException, InterruptedException {
-        // see RemotingDiagnostics.Script
-        @Nonnull ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
+        Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins == null) {
+            throw new IllegalStateException("Jenkins instance is null - Jenkins is shutting down?");
+        }
+        @Nonnull ClassLoader cl = jenkins.getPluginManager().uberClassLoader;
         // Use HashMap as a backend for Binding as Hashtable does not accept nulls
         Map<Object, Object> binding = new HashMap<Object, Object>();
         binding.putAll(parseProperties(bindings));
