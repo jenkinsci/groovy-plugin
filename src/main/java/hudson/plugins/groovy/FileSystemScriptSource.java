@@ -8,6 +8,7 @@ import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import java.io.IOException;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class FileSystemScriptSource extends SystemScriptSource {
@@ -28,7 +29,7 @@ public class FileSystemScriptSource extends SystemScriptSource {
         EnvVars env = build.getEnvironment(listener);
         String expandedScriptFile = env.expand(this.scriptFile);
         String text = new FilePath(projectWorkspace, expandedScriptFile).readToString();
-        return new SecureGroovyScript(text, true, null);
+        return new SecureGroovyScript(text, true, null).configuring(ApprovalContext.create()/* unused but just in case: */.withItem(build.getParent()));
     }
 
     @Extension
