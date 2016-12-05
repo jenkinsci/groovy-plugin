@@ -10,7 +10,6 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -37,6 +36,7 @@ import net.sf.json.JSONObject;
  */
 public class Groovy extends AbstractGroovy {
 
+    private ScriptSource scriptSource;
     private String groovyName;
     private String parameters;
     private String scriptParameters;
@@ -49,7 +49,7 @@ public class Groovy extends AbstractGroovy {
     @DataBoundConstructor
     public Groovy(ScriptSource scriptSource, String groovyName, String parameters,
             String scriptParameters, String properties, String javaOpts, String classPath) {
-        super(scriptSource);
+        this.scriptSource = scriptSource;
         this.groovyName = groovyName;
         this.parameters = parameters;
         this.scriptParameters = scriptParameters;
@@ -327,11 +327,16 @@ public class Groovy extends AbstractGroovy {
         return args;
     }
 
+    public ScriptSource getScriptSource() {
+        return scriptSource;
+    }
 
+    @Deprecated
     public String getCommand() {
         return command;
     }
 
+    @Deprecated
     public String getScriptFile() {
         return scriptFile;
     }
@@ -340,6 +345,7 @@ public class Groovy extends AbstractGroovy {
         return groovyName;
     }
 
+    @Deprecated
     public BuilderType getType() {
         return type;
     }
@@ -376,16 +382,11 @@ public class Groovy extends AbstractGroovy {
         if (type != null) {
             switch (type) {
                 case COMMAND:
-                    scriptSource = new StringScriptSource(new SecureGroovyScript(command, true, null));
+                    scriptSource = new StringScriptSource(command);
                     break;
                 case FILE:
                     scriptSource = new FileScriptSource(scriptFile);
                     break;
-            }
-        } else if (scriptSource instanceof StringScriptSource) {
-            StringScriptSource sss = (StringScriptSource) scriptSource;
-            if (sss.command != null) {
-                scriptSource = new StringScriptSource(new SecureGroovyScript(sss.command, true, null));
             }
         }
 

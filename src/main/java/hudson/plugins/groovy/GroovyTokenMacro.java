@@ -64,7 +64,7 @@ public class GroovyTokenMacro extends DataBoundTokenMacro {
 	    Groovy.DescriptorImpl decs = (Groovy.DescriptorImpl) jenkins.getDescriptorOrDie(Groovy.class);
 
 		if (decs.getAllowMacro()) {
-			StringScriptSource scriptSource = new StringScriptSource(new SecureGroovyScript(script, true, null));
+			SystemScriptSource scriptSource = new StringSystemScriptSource(new SecureGroovyScript(script, true, null));
 
 			SystemGroovy systemGroovy = new SystemGroovy(scriptSource, "");
 			Object output = systemGroovy.run(context, (BuildListener) listener, null);

@@ -1,7 +1,6 @@
 package hudson.plugins.groovy;
 
 import groovy.lang.GroovyShell;
-import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.BuildListener;
@@ -11,7 +10,6 @@ import hudson.util.FormValidation;
 
 import java.io.IOException;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -22,38 +20,22 @@ import org.kohsuke.stapler.QueryParameter;
  */
 public class StringScriptSource extends ScriptSource {
 
-    private final SecureGroovyScript script;
-
-    @Deprecated
-    transient String command;
+    private String command;
 
     @DataBoundConstructor
-    public StringScriptSource(SecureGroovyScript script) {
-        this.script = script.configuringWithNonKeyItem();
-    }
-
-    @Deprecated
     public StringScriptSource(String command) {
-        this(new SecureGroovyScript(command, true, null));
-    }
-
-    @Override
-    public SecureGroovyScript getSecureGroovyScript(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
-        return script;
+        this.command = command;
     }
 
     @Override
     public FilePath getScriptFile(
             FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener
     ) throws IOException, InterruptedException {
-        if (!script.getClasspath().isEmpty()) {
-            throw new AbortException("Define classpath in the Groovy builder, not here");
-        }
-        return projectWorkspace.createTextTempFile("hudson", ".groovy", script.getScript(), true);
+        return projectWorkspace.createTextTempFile("hudson", ".groovy", command, true);
     }
 
-    public SecureGroovyScript getScript() {
-        return script;
+    public String getCommand() {
+        return command;
     }
 
     @Override
@@ -63,15 +45,13 @@ public class StringScriptSource extends ScriptSource {
 
         StringScriptSource that = (StringScriptSource) o;
 
-        return script.getScript().equals(that.script.getScript()) &&
-               script.isSandbox() == that.script.isSandbox() &&
-               script.getClasspath().equals(that.script.getClasspath());
+        return command != null ? command.equals(that.command) : that.command == null;
 
     }
 
     @Override
     public int hashCode() {
-        return script.getClasspath().hashCode();
+        return command != null ? command.hashCode() : 0;
     }
 
     @Extension

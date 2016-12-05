@@ -31,7 +31,7 @@ public class GroovyPluginTest {
     //JENKINS-25392
     @Test
     public void testFailWhenScriptThrowsException() throws Exception {
-        ScriptSource script = new StringScriptSource(new SecureGroovyScript("throw new Exception(\"test\")", true, null));
+        ScriptSource script = new StringScriptSource("throw new Exception(\"test\")");
         Groovy g = new Groovy(script,"(Default)", "", "","", "", "");
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(g);
@@ -42,7 +42,7 @@ public class GroovyPluginTest {
     @Test
     public void assignNullToBindingVariables() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.getBuildersList().add(new SystemGroovy(new StringScriptSource(new SecureGroovyScript("bindingVar = null", true, null)), ""));
+        p.getBuildersList().add(new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript("bindingVar = null", true, null)), ""));
         j.buildAndAssertSuccess(p);
     }
 
@@ -50,18 +50,18 @@ public class GroovyPluginTest {
 
     @Test
     public void roundtripTestSystemGroovyStringScript() throws Exception {
-        SystemGroovy before = new SystemGroovy(new StringScriptSource(new SecureGroovyScript("println 'Test'", true, null)), "TEST=45");
+        SystemGroovy before = new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript("println 'Test'", true, null)), "TEST=45");
         SystemGroovy after = doRoundtrip(before, SystemGroovy.class);
 
-        j.assertEqualBeans(before, after, "scriptSource,bindings");
+        j.assertEqualDataBoundBeans(before, after);
     }
 
     @Test
     public void roundtripTestSystemGroovyFileScript() throws Exception {
-        SystemGroovy before = new SystemGroovy(new FileScriptSource("test.groovy"),"TEST=45");
+        SystemGroovy before = new SystemGroovy(new FileSystemScriptSource("test.groovy"),"TEST=45");
         SystemGroovy after = doRoundtrip(before, SystemGroovy.class);
 
-        j.assertEqualBeans(before, after, "scriptSource,bindings");
+        j.assertEqualDataBoundBeans(before, after);
     }
 
     @Test
@@ -74,7 +74,7 @@ public class GroovyPluginTest {
 
     @Test
     public void roundtripTestGroovyStringScript() throws Exception {
-        Groovy before = new Groovy(new StringScriptSource(new SecureGroovyScript("println 'Test'", true, null)), "(Default)", "-Xmx1024m", "TEST=45", "some.property=true", "-Xmx1024m", "test.jar");
+        Groovy before = new Groovy(new StringScriptSource("println 'Test'"),"(Default)", "-Xmx1024m", "TEST=45","some.property=true", "-Xmx1024m", "test.jar");
         Groovy after = doRoundtrip(before, Groovy.class);
 
         j.assertEqualBeans(before, after, "scriptSource,groovyName,parameters,scriptParameters,properties,javaOpts,classPath");
@@ -82,14 +82,14 @@ public class GroovyPluginTest {
 
     @Test
     public void roundtripTestGroovyParams() throws Exception {
-        Groovy before = new Groovy(new StringScriptSource(new SecureGroovyScript("println 'Test'", true, null)), "(Default)", "some 'param with spaces' and other params", "some other 'param with spaces' and other params", "some.property=true", "-Xmx1024m", "test.jar");
+        Groovy before = new Groovy(new StringScriptSource("println 'Test'"),"(Default)", "some 'param with spaces' and other params", "some other 'param with spaces' and other params", "some.property=true", "-Xmx1024m", "test.jar");
         Groovy after = doRoundtrip(before, Groovy.class);
         j.assertEqualBeans(before, after, "parameters,scriptParameters");
     }
 
     @Test
     public void roundtripTestGroovyParamsSlashes() throws Exception {
-        Groovy before = new Groovy(new StringScriptSource(new SecureGroovyScript("println 'Test'", true, null)), "(Default)", "some 'param with spaces' and http://slashes/and c:\\backslashes", "some other 'param with spaces' and http://slashes/and c:\\backslashes", "some.property=true", "-Xmx1024m", "test.jar");
+        Groovy before = new Groovy(new StringScriptSource("println 'Test'"),"(Default)", "some 'param with spaces' and http://slashes/and c:\\backslashes", "some other 'param with spaces' and http://slashes/and c:\\backslashes", "some.property=true", "-Xmx1024m", "test.jar");
         Groovy after = doRoundtrip(before, Groovy.class);
         j.assertEqualBeans(before, after, "parameters,scriptParameters");
     }

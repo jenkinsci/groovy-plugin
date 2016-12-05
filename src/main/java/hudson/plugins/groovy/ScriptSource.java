@@ -9,17 +9,16 @@ import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
-import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
+import java.io.InputStream;
 
 /**
- * Base interface for Groovy script sources.
+ * Base interface for {@link Groovy} script sources.
  *
  * @author dvrzalik
  */
 public abstract class ScriptSource implements Describable<ScriptSource> {
 
     /**
-     * Provides a script for use from {@link Groovy}.
      * Able to load script when script path contains parameters
      *
      * @param projectWorkspace Project workspace to create tmp file
@@ -32,9 +31,33 @@ public abstract class ScriptSource implements Describable<ScriptSource> {
     public abstract FilePath getScriptFile(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException;
 
     /**
-     * Provides a script for use from {@link SystemGroovy}.
+     * @return Stream containing the script, able to load script when script path contains parameters
+     * @deprecated Unused.
      */
-    public abstract SecureGroovyScript getSecureGroovyScript(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException;
+    @Deprecated
+    public InputStream getScriptStream(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
+        return getScriptFile(projectWorkspace, build, listener).read();
+    }
+
+    /**
+     * In the end, every script is a file...
+     *
+     * @param projectWorkspace Project workspace (useful when the source has to create temporary file)
+     * @return Path to the executed script file
+     * @deprecated Unused.
+     */
+    @Deprecated
+    public FilePath getScriptFile(FilePath projectWorkspace) throws IOException, InterruptedException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @deprecated Unused
+     */
+    @Deprecated
+    public InputStream getScriptStream(FilePath projectWorkspace) throws IOException, InterruptedException {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     @SuppressWarnings("unchecked")

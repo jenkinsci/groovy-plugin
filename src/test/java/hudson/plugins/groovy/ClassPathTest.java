@@ -8,7 +8,6 @@ import hudson.model.FreeStyleProject;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,29 +26,29 @@ public class ClassPathTest {
     @Test
     public void testWildcartOnClassPath() throws Exception {
         final String testJar = "groovy-cp-test.jar";
-        final ScriptSource script = new StringScriptSource(new SecureGroovyScript(
+        final ScriptSource script = new StringScriptSource(
                 "def printCP(classLoader){\n "
                 + "  classLoader.getURLs().each {println \"$it\"}\n"
                 + "  if(classLoader.parent) {printCP(classLoader.parent)}\n"
                 + "}\n"
-                + "printCP(this.class.classLoader)", true, null));
+                + "printCP(this.class.classLoader)");
         Groovy g = new Groovy(script,"(Default)", "", "","", "", this.getClass().getResource("/lib").getPath() + "/*");
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(g);
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get(10,TimeUnit.SECONDS).getResult());
         assertTrue(containsString(p.scheduleBuild2(0).get().getLog(100), testJar));
     }
-
+    
     @Issue("JENKINS-29577")
     @Test
     public void testClassPathAndProperties() throws Exception {
         final String testJar = "groovy-cp-test.jar";
         StringBuilder sb = new StringBuilder();
-        final ScriptSource script = new StringScriptSource(new SecureGroovyScript(
+        final ScriptSource script = new StringScriptSource(
                 sb.append("import App\n")
                 .append("println System.getProperty(\"aaa\")")
                 .toString()
-                , true, null));
+                );
         Groovy g = new Groovy(script,"(Default)", "", "","aaa=\"bbb\"", "", this.getClass().getResource("/lib").getPath() + File.separator + testJar);
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(g);

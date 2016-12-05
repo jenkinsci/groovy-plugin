@@ -30,19 +30,22 @@ import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
  */
 public class SystemGroovy extends AbstractGroovy {
 
+    private SystemScriptSource source;
     private String bindings;
-    @Deprecated
-    private transient String classpath;
 
     @DataBoundConstructor
-    public SystemGroovy(final ScriptSource scriptSource, final String bindings) {
-        super(scriptSource);
+    public SystemGroovy(final SystemScriptSource source, final String bindings) {
+        this.source = source;
         this.bindings = bindings;
     }
 
     @Deprecated
     public SystemGroovy(final ScriptSource scriptSource, final String bindings, final String classpath) {
-        super(scriptSource);
+        if (scriptSource instanceof StringScriptSource) {
+            source = new StringSystemScriptSource(new SecureGroovyScript(((StringScriptSource) scriptSource).getCommand(), false, null));
+        } else {
+            source = new FileSystemScriptSource(((FileScriptSource) scriptSource).getScriptFile());
+        }
         this.bindings = bindings;
         if (Util.fixEmpty(classpath) != null) {
             throw new UnsupportedOperationException("classpath no longer supported"); // TODO convert StringScriptSource at least
@@ -89,7 +92,7 @@ public class SystemGroovy extends AbstractGroovy {
             binding.put("out", listener.getLogger());
         }
         try {
-            return getScriptSource().getSecureGroovyScript(build.getWorkspace(), build, listener).evaluate(cl, new Binding(binding));
+            return source.getSecureGroovyScript(build.getWorkspace(), build, listener).evaluate(cl, new Binding(binding));
         } catch (IOException x) {
             throw x;
         } catch (InterruptedException x) {
@@ -126,29 +129,40 @@ public class SystemGroovy extends AbstractGroovy {
 
     @Deprecated
     private transient String command;
+    @Deprecated
+    private transient ScriptSource scriptSource;
+    @Deprecated
+    private transient String classpath;
 
     @SuppressWarnings("deprecation")
     private Object readResolve() throws Exception {
         if (command != null) {
-            scriptSource = new StringScriptSource(new SecureGroovyScript(command, false, null).configuring(ApprovalContext.create()));
+            source = new StringSystemScriptSource(new SecureGroovyScript(command, false, null).configuring(ApprovalContext.create()));
             command = null;
         } else if (scriptSource instanceof StringScriptSource) {
-            StringScriptSource sss = (StringScriptSource) scriptSource;
-            if (sss.command != null) {
-                List<ClasspathEntry> classpathEntries = new ArrayList<ClasspathEntry>();
-                if (classpath != null) {
-                    StringTokenizer tokens = new StringTokenizer(classpath);
-                    while (tokens.hasMoreTokens()) {
-                        classpathEntries.add(new ClasspathEntry(tokens.nextToken()));
-                    }
+            List<ClasspathEntry> classpathEntries = new ArrayList<ClasspathEntry>();
+            if (classpath != null) {
+                StringTokenizer tokens = new StringTokenizer(classpath);
+                while (tokens.hasMoreTokens()) {
+                    classpathEntries.add(new ClasspathEntry(tokens.nextToken()));
                 }
-                scriptSource = new StringScriptSource(new SecureGroovyScript(sss.command, false, classpathEntries).configuring(ApprovalContext.create()));
             }
-        } else if (scriptSource instanceof FileScriptSource && Util.fixEmpty(classpath) != null) {
-            throw new UnsupportedOperationException("classpath no longer supported in conjunction with Groovy script file source");
+            source = new StringSystemScriptSource(new SecureGroovyScript(Util.fixNull(((StringScriptSource) scriptSource).getCommand()), false, classpathEntries).configuring(ApprovalContext.create()));
+            scriptSource = null;
+        } else if (scriptSource instanceof FileScriptSource) {
+            if (Util.fixEmpty(classpath) != null) {
+                throw new UnsupportedOperationException("classpath no longer supported in conjunction with Groovy script file source");
+            } else {
+                source = new FileSystemScriptSource(((FileScriptSource) scriptSource).getScriptFile());
+                scriptSource = null;
+            }
         }
 
         return this;
+    }
+
+    public SystemScriptSource getSource() {
+        return source;
     }
 
     public String getBindings() {
