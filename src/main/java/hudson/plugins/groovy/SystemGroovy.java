@@ -144,14 +144,18 @@ public class SystemGroovy extends AbstractGroovy {
             if (classpath != null) {
                 StringTokenizer tokens = new StringTokenizer(classpath);
                 while (tokens.hasMoreTokens()) {
-                    classpathEntries.add(new ClasspathEntry(tokens.nextToken()));
+                    ClasspathEntry ce = new ClasspathEntry(tokens.nextToken());
+                    if (ce.isClassDirectory()) {
+                        throw new UnsupportedOperationException("directory-based classpath entries not supported in system Groovy script string source");
+                    }
+                    classpathEntries.add(ce);
                 }
             }
             source = new StringSystemScriptSource(new SecureGroovyScript(Util.fixNull(((StringScriptSource) scriptSource).getCommand()), false, classpathEntries).configuring(ApprovalContext.create()));
             scriptSource = null;
         } else if (scriptSource instanceof FileScriptSource) {
             if (Util.fixEmpty(classpath) != null) {
-                throw new UnsupportedOperationException("classpath no longer supported in conjunction with Groovy script file source");
+                throw new UnsupportedOperationException("classpath no longer supported in conjunction with system Groovy script file source");
             } else {
                 source = new FileSystemScriptSource(((FileScriptSource) scriptSource).getScriptFile());
                 scriptSource = null;
@@ -166,12 +170,12 @@ public class SystemGroovy extends AbstractGroovy {
     }
 
     public String getBindings() {
-        return bindings;
+        return Util.fixEmpty(bindings);
     }
 
     @DataBoundSetter
     public void setBindings(String bindings) {
-        this.bindings = bindings;
+        this.bindings = Util.fixEmpty(bindings);
     }
 
 }

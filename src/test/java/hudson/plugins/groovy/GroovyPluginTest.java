@@ -9,21 +9,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import hudson.cli.CLICommandInvoker;
-import hudson.cli.CreateJobCommand;
-import hudson.model.Item;
-import java.io.ByteArrayInputStream;
-import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
-import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
-import org.junit.ClassRule;
-import org.jvnet.hudson.test.BuildWatcher;
-import org.jvnet.hudson.test.Issue;
 
 public class GroovyPluginTest {
-
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
@@ -103,17 +91,6 @@ public class GroovyPluginTest {
         j.submit(j.createWebClient().getPage(p,"configure").getFormByName("config"));
         T after = p.getBuildersList().get(clazz);
         return after;
-    }
-
-    @Issue("SECURITY-292")
-    @Test
-    public void scriptSecurity() throws Exception {
-        String configXml = "<project><builders><" + SystemGroovy.class.getName() + ">" +
-            "<scriptSource class=\"" + StringScriptSource.class.getName() + "\"><command>jenkins.model.Jenkins.instance.systemMessage = 'pwned'</command></scriptSource>" +
-            "<bindings/><classpath/></" + SystemGroovy.class.getName() + "></builders></project>";
-        assertThat(new CLICommandInvoker(j, new CreateJobCommand()).authorizedTo(Jenkins.READ, Item.CREATE).withArgs("attack").withStdin(new ByteArrayInputStream(configXml.getBytes())).invoke(), CLICommandInvoker.Matcher.succeeded());
-        j.assertLogContains(UnapprovedUsageException.class.getName(), j.jenkins.getItemByFullName("attack", FreeStyleProject.class).scheduleBuild2(0).get());
-        assertNull(j.jenkins.getSystemMessage());
     }
 
 }
