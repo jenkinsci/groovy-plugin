@@ -16,6 +16,7 @@ import java.util.StringTokenizer;
 
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -34,9 +35,8 @@ public class SystemGroovy extends AbstractGroovy {
     private String bindings;
 
     @DataBoundConstructor
-    public SystemGroovy(final SystemScriptSource source, final String bindings) {
+    public SystemGroovy(final SystemScriptSource source) {
         this.source = source;
-        this.bindings = bindings;
     }
 
     @Deprecated
@@ -167,6 +167,11 @@ public class SystemGroovy extends AbstractGroovy {
 
     public String getBindings() {
         return bindings;
+    }
+
+    @DataBoundSetter
+    public void setBindings(String bindings) {
+        this.bindings = bindings;
     }
 
 }

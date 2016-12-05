@@ -42,7 +42,7 @@ public class GroovyPluginTest {
     @Test
     public void assignNullToBindingVariables() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.getBuildersList().add(new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript("bindingVar = null", true, null)), ""));
+        p.getBuildersList().add(new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript("bindingVar = null", true, null))));
         j.buildAndAssertSuccess(p);
     }
 
@@ -50,7 +50,8 @@ public class GroovyPluginTest {
 
     @Test
     public void roundtripTestSystemGroovyStringScript() throws Exception {
-        SystemGroovy before = new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript("println 'Test'", true, null)), "TEST=45");
+        SystemGroovy before = new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript("println 'Test'", true, null)));
+        before.setBindings("TEST=45");
         SystemGroovy after = doRoundtrip(before, SystemGroovy.class);
 
         j.assertEqualDataBoundBeans(before, after);
@@ -58,7 +59,8 @@ public class GroovyPluginTest {
 
     @Test
     public void roundtripTestSystemGroovyFileScript() throws Exception {
-        SystemGroovy before = new SystemGroovy(new FileSystemScriptSource("test.groovy"),"TEST=45");
+        SystemGroovy before = new SystemGroovy(new FileSystemScriptSource("test.groovy"));
+        before.setBindings("TEST=45");
         SystemGroovy after = doRoundtrip(before, SystemGroovy.class);
 
         j.assertEqualDataBoundBeans(before, after);
