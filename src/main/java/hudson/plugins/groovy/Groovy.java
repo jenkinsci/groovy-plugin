@@ -1,18 +1,5 @@
 package hudson.plugins.groovy;
 
-import hudson.CopyOnWrite;
-import hudson.EnvVars;
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.Util;
-import hudson.model.BuildListener;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Computer;
-import hudson.model.ParametersAction;
-import hudson.util.VariableResolver;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,13 +8,26 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+
+import hudson.CopyOnWrite;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.Util;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.Computer;
+import hudson.model.Node;
+import hudson.model.ParametersAction;
+import hudson.util.VariableResolver;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 
 /**
  * A Builder for Groovy scripts.
@@ -82,7 +82,10 @@ public class Groovy extends AbstractGroovy {
                 Map<String,String> envVars = build.getEnvironment(listener);
                 hudson.plugins.groovy.GroovyInstallation installation = getGroovy();
                 if(installation != null) {
-                    installation = installation.forNode(Computer.currentComputer().getNode(), listener);
+                    Node node = Computer.currentComputer().getNode();
+                    if (node != null) {
+                        installation = installation.forNode(node, listener);
+                    }
                     envVars.put("GROOVY_HOME", installation.getHome());
                 }
 
@@ -167,11 +170,15 @@ public class Groovy extends AbstractGroovy {
         }
 
         public static hudson.plugins.groovy.GroovyInstallation getGroovy(String groovyName) {
-            for( hudson.plugins.groovy.GroovyInstallation i : ((DescriptorImpl) Jenkins.getInstance().getDescriptor(Groovy.class)).getInstallations()) {
-                if(groovyName!=null && i.getName().equals(groovyName))
-              return i;
+            Jenkins jenkins = Jenkins.getInstance();
+            if (jenkins != null) {
+                for( hudson.plugins.groovy.GroovyInstallation i : ((DescriptorImpl) jenkins.getDescriptor(Groovy.class)).getInstallations()) {
+                    if(groovyName!=null && i.getName().equals(groovyName)) {
+                        return i;
+                    }
+                }
             }
-          return null;
+            return null;
         }
 
         public void setInstallations(hudson.plugins.groovy.GroovyInstallation... installations) {
@@ -226,12 +233,6 @@ public class Groovy extends AbstractGroovy {
         return DescriptorImpl.getGroovy(groovyName);
     }
 
-    //backward compatibility, default is Unix
-    @Deprecated
-    protected List<String> buildCommandLine(AbstractBuild<?,?> build,FilePath script) throws IOException, InterruptedException  {
-    	return buildCommandLine(build, null, script, true);
-    }
-
     protected List<String> buildCommandLine(AbstractBuild<?,?> build, BuildListener listener, FilePath script, boolean isOnUnix) throws IOException, InterruptedException  {
         ArrayList<String> list = new ArrayList<String>();
 
@@ -245,7 +246,10 @@ public class Groovy extends AbstractGroovy {
 
         hudson.plugins.groovy.GroovyInstallation installation = getGroovy();
         if(installation != null) {
-            installation = installation.forNode(Computer.currentComputer().getNode(), listener);
+            Node node = Computer.currentComputer().getNode();
+            if (node != null ) {
+                installation = installation.forNode(node, listener);
+            }
             installation = installation.forEnvironment(env);
             cmd = installation.getExecutable(script.getChannel());
             //some misconfiguration, reverting back to default groovy cmd

@@ -11,7 +11,7 @@
     <artifactId>groovy</artifactId>
     <packaging>hpi</packaging>
     <name>Groovy</name>
-    <version>1.30-SNAPSHOT</version>
+    <version>1.31-SNAPSHOT</version>
     <url>http://wiki.jenkins-ci.org/display/JENKINS/Groovy+plugin</url>
 
     <properties>

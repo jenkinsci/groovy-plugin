@@ -14,10 +14,16 @@ import hudson.util.Secret;
 import hudson.util.VariableResolver;
 import hudson.util.XStream2;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.Charset;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,25 +92,33 @@ public class SystemGroovy extends AbstractGroovy {
     }
 
     /*packahge*/ Object run(AbstractBuild<?, ?> build, BuildListener listener, @CheckForNull Launcher launcher) throws IOException, InterruptedException {
-        CompilerConfiguration compilerConfig = new CompilerConfiguration();
+        final List<URL> classPathURLs = new ArrayList<URL>();
         if (classpath != null) {
             EnvVars env = build.getEnvironment(listener);
             env.overrideAll(build.getBuildVariables());
             VariableResolver<String> vr = new VariableResolver.ByMap<String>(env);
-            if(classpath.contains("\n")) {
-                compilerConfig.setClasspathList(parseClassPath(classpath, vr));
-            } else {
-                compilerConfig.setClasspath(Util.replaceMacro(classpath,vr));
-            }
+            classPathURLs.addAll(parseClassPath(classpath, vr));
         }
 
-        // see RemotingDiagnostics.Script
-        @Nonnull ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
-
+        Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins == null ) {
+            throw new IllegalStateException("Jenkins instance is null - Jenkins is shutting down?");
+        }
+        
+        @Nonnull final ClassLoader cl = jenkins.getPluginManager().uberClassLoader;
+        // normally doPrivileged should be called only when System.getSecurityManager() is not null, but Findbugs still considers 
+        // creating new classloader in else branch as an issues, so calling doPrivileged always (until some better solution is found 
+        // or Finbugs is more clever)
+        URLClassLoader extendedClassLoader = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
+            @Override
+            public URLClassLoader run() {
+                return new URLClassLoader(classPathURLs.toArray(new URL[classPathURLs.size()]), cl);
+            }
+        });
         // Use HashMap as a backend for Binding as Hashtable does not accept nulls
         Map<Object, Object> binding = new HashMap<Object, Object>();
         binding.putAll(parseProperties(bindings));
-        GroovyShell shell = new GroovyShell(cl, new Binding(binding), compilerConfig);
+        GroovyShell shell = new GroovyShell(extendedClassLoader, new Binding(binding));
 
         shell.setVariable("build", build);
         if (launcher != null)
@@ -118,11 +132,28 @@ public class SystemGroovy extends AbstractGroovy {
         return shell.evaluate(new InputStreamReader(scriptStream, Charset.defaultCharset()));
     }
 
-    private List<String> parseClassPath(String classPath, VariableResolver<String> vr) {
-        List<String> cp = new ArrayList<String>();
-        StringTokenizer tokens = new StringTokenizer(classPath);
-        while(tokens.hasMoreTokens()) {
-            cp.add(Util.replaceMacro(tokens.nextToken(),vr));
+    private URL pathToURL(String path){
+        try {
+            return new URL(path);
+        } catch (MalformedURLException x) {
+            try {
+                return new File(path).toURI().toURL();
+            } catch (MalformedURLException e) {
+                return null;
+            }
+        }
+    }
+
+    private List<URL> parseClassPath(String classPath, VariableResolver<String> vr) {
+        List<URL> cp = new ArrayList<URL>();
+        for (String path : classPath.split("\n")){
+            StringTokenizer tokens = new StringTokenizer(classPath);
+            while(tokens.hasMoreTokens()) {
+                URL url = pathToURL(Util.replaceMacro(tokens.nextToken(),vr));
+                if (url != null){
+                    cp.add(url);
+                }
+            }
         }
         return cp;
     }
@@ -143,8 +174,13 @@ public class SystemGroovy extends AbstractGroovy {
         @Override
         @SuppressWarnings("rawtypes")
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            Jenkins jenkins = Jenkins.getInstance();
+            if (jenkins == null ) {
+                throw new IllegalStateException("Jenkins instance is null - Jenkins is shutting down?");
+            }
+            
             Authentication a = Jenkins.getAuthentication();
-            if (Jenkins.getInstance().getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)) {
+            if (jenkins.getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)) {
                 return true;
             }
             return false;
@@ -152,10 +188,13 @@ public class SystemGroovy extends AbstractGroovy {
 
         @Override
         public SystemGroovy newInstance(StaplerRequest req, JSONObject data) throws FormException {
-
+            Jenkins jenkins = Jenkins.getInstance();
+            if (jenkins == null ) {
+                throw new IllegalStateException("Jenkins instance is null - Jenkins is shutting down?");
+            }
             // don't allow unauthorized users to modify scripts
             Authentication a = Jenkins.getAuthentication();
-            if (Jenkins.getInstance().getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)) {
+            if (jenkins.getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)) {
                 return (SystemGroovy) super.newInstance(req, data);
             } else {
                 String secret = data.getString("secret");
