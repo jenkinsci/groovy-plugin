@@ -2,6 +2,7 @@ package hudson.plugins.groovy;
 
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import org.jenkinsci.plugins.workflow.steps.StepConfigTester;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.Rule;
@@ -22,6 +23,17 @@ public class GroovyPipelineStepTest {
         WorkflowJob p = r.createProject(WorkflowJob.class, "p");
         p.setDefinition(new CpsFlowDefinition("node('remote') {writeFile file: 'x.groovy', text: 'println(/got: ${111/3}/)'; groovy 'x.groovy'}", true));
         r.assertLogContains("got: 37", r.buildAndAssertSuccess(p));
+    }
+
+    @Test
+    public void configRoundtrip() throws Exception {
+        StepConfigTester tester = new StepConfigTester(r);
+        GroovyPipelineStep step = new GroovyPipelineStep("-Dwhatever script.groovy");
+        r.assertEqualDataBoundBeans(step, tester.configRoundTrip(step));
+        r.jenkins.getDescriptorByType(GroovyInstallation.DescriptorImpl.class).setInstallations(new GroovyInstallation("groovy3", "/usr/share/groovy3", null));
+        r.assertEqualDataBoundBeans(step, tester.configRoundTrip(step));
+        step.setTool("groovy3");
+        r.assertEqualDataBoundBeans(step, tester.configRoundTrip(step));
     }
 
 }
