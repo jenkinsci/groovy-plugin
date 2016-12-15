@@ -18,3 +18,5 @@ if (installations.length != 0) {
 f.entry(title: _("Arguments"), field: "args") {
     f.expandableTextbox()
 }
+
+f.entry(title: 'input', field: 'input') {}

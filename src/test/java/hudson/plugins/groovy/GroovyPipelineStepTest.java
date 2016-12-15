@@ -36,4 +36,12 @@ public class GroovyPipelineStepTest {
         r.assertEqualDataBoundBeans(step, tester.configRoundTrip(step));
     }
 
+    @Test
+    public void io() throws Exception {
+        WorkflowJob p = r.createProject(WorkflowJob.class, "p");
+        r.jenkins.getWorkspaceFor(p).child("calc.groovy").write("Pipeline.output(Pipeline.input().collect {k, v -> k * v})", null);
+        p.setDefinition(new CpsFlowDefinition("node {def r = groovy args: 'calc.groovy', input: [once: 1, twice: 2, thrice: 3]; echo r.join('/')}", true));
+        r.assertLogContains("once/twicetwice/thricethricethrice", r.buildAndAssertSuccess(p));
+    }
+
 }
