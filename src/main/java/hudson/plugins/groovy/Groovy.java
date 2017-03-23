@@ -173,9 +173,12 @@ public class Groovy extends AbstractGroovy {
         public static hudson.plugins.groovy.GroovyInstallation getGroovy(String groovyName) {
             Jenkins jenkins = Jenkins.getInstance();
             if (jenkins != null) {
-                for( hudson.plugins.groovy.GroovyInstallation i : ((DescriptorImpl) jenkins.getDescriptor(Groovy.class)).getInstallations()) {
-                    if(groovyName!=null && i.getName().equals(groovyName)) {
-                        return i;
+                DescriptorImpl desc = (DescriptorImpl)jenkins.getDescriptor(Groovy.class);
+                if (desc != null) {
+                    for( hudson.plugins.groovy.GroovyInstallation i : desc.getInstallations()) {
+                        if (groovyName != null && i.getName().equals(groovyName)) {
+                            return i;
+                        }
                     }
                 }
             }
