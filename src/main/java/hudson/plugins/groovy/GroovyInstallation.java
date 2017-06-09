@@ -20,6 +20,7 @@ import java.util.List;
 
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
+import org.jenkinsci.Symbol;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -68,6 +69,7 @@ public class GroovyInstallation extends ToolInstallation implements EnvironmentS
         return new GroovyInstallation(getName(), translateFor(node, log), getProperties().toList());
     }
 
+    @Symbol("groovy")
     @Extension
     public static class DescriptorImpl extends ToolDescriptor<GroovyInstallation> {
 
