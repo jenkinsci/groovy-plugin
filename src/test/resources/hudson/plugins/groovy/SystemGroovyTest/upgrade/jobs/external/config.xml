@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.plugins.groovy.Groovy plugin="groovy@1.30">
+      <scriptSource class="hudson.plugins.groovy.StringScriptSource">
+        <command>println &apos;hello&apos;</command>
+      </scriptSource>
+      <groovyName>(Default)</groovyName>
+      <parameters></parameters>
+      <scriptParameters></scriptParameters>
+      <properties></properties>
+      <javaOpts>-ea</javaOpts>
+      <classPath>/tmp/x.jar</classPath>
+    </hudson.plugins.groovy.Groovy>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

@@ -30,6 +30,7 @@ import jenkins.model.Jenkins;
 import hudson.model.AbstractBuild;
 
 import java.io.IOException;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
@@ -63,9 +64,7 @@ public class GroovyTokenMacro extends DataBoundTokenMacro {
 	    Groovy.DescriptorImpl decs = (Groovy.DescriptorImpl) jenkins.getDescriptorOrDie(Groovy.class);
 
 		if (decs.getAllowMacro()) {
-			StringScriptSource scriptSource = new StringScriptSource(script);
-
-			SystemGroovy systemGroovy = new SystemGroovy(scriptSource, "", null);
+			SystemGroovy systemGroovy = new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript(script, true, null)));
 			Object output = systemGroovy.run(context, (BuildListener) listener, null);
 			
 			return output != null ? output.toString() : "";

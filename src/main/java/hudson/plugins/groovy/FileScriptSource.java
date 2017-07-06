@@ -8,10 +8,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Objects;
-
-import org.apache.commons.io.Charsets;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -37,11 +33,6 @@ public class FileScriptSource extends ScriptSource {
 
     public String getScriptFile() {
       return scriptFile;
-    }
-
-    @Override
-    public InputStream getScriptStream(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
-        return getScriptFile(projectWorkspace,build,listener).read();
     }
 
     @Override

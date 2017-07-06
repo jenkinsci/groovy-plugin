@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Base interface for Groovy script sources.
+ * Base interface for {@link Groovy} script sources.
  *
  * @author dvrzalik
  */
@@ -32,8 +32,12 @@ public abstract class ScriptSource implements Describable<ScriptSource> {
 
     /**
      * @return Stream containing the script, able to load script when script path contains parameters
+     * @deprecated Unused.
      */
-    public abstract InputStream getScriptStream(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException;
+    @Deprecated
+    public InputStream getScriptStream(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
+        return getScriptFile(projectWorkspace, build, listener).read();
+    }
 
     /**
      * In the end, every script is a file...

@@ -39,15 +39,6 @@ public class ClassPathTest {
         assertTrue(containsString(p.scheduleBuild2(0).get().getLog(100), testJar));
     }
     
-    @Test
-    public void testClassDirectoryOnClassLoaderSystemGroovy() throws Exception {
-        final ScriptSource script = new StringScriptSource("App.main()");
-        SystemGroovy g = new SystemGroovy(script,"", "file://" + this.getClass().getResource("/classes").getPath() + "/");
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.getBuildersList().add(g);
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get(10,TimeUnit.SECONDS).getResult());
-    }
-    
     @Issue("JENKINS-29577")
     @Test
     public void testClassPathAndProperties() throws Exception {

@@ -5,7 +5,6 @@ import hudson.model.Descriptor;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Properties;
@@ -25,11 +24,7 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public abstract class AbstractGroovy extends Builder {
 
-    protected ScriptSource scriptSource;
-
-    public AbstractGroovy(ScriptSource scriptSource) {
-        this.scriptSource = scriptSource;
-    }
+    protected AbstractGroovy() {}
 
     public static abstract class AbstractGroovyDescriptor extends BuildStepDescriptor<Builder> {
 
@@ -39,7 +34,9 @@ public abstract class AbstractGroovy extends Builder {
 
         /**
          * Extracts ScriptSource from given form data.
+         * @deprecated Unused.
          */
+        @Deprecated
         protected ScriptSource getScriptSource(
             final StaplerRequest req,
             final JSONObject data
@@ -72,10 +69,6 @@ public abstract class AbstractGroovy extends Builder {
         public static DescriptorExtensionList<ScriptSource, Descriptor<ScriptSource>> getScriptSources() {
             return ScriptSource.all();
         }
-    }
-
-    public ScriptSource getScriptSource() {
-        return scriptSource;
     }
 
     public static @Nonnull Properties parseProperties(final String properties) throws IOException {

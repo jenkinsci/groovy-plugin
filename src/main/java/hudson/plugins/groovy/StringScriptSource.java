@@ -8,11 +8,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
 import hudson.util.FormValidation;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-
-import org.apache.commons.io.Charsets;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -29,11 +25,6 @@ public class StringScriptSource extends ScriptSource {
     @DataBoundConstructor
     public StringScriptSource(String command) {
         this.command = command;
-    }
-
-    @Override
-    public InputStream getScriptStream(FilePath projectWorkspace, AbstractBuild<?, ?> build, BuildListener listener) {
-        return new ByteArrayInputStream(command.getBytes(Charsets.UTF_8));
     }
 
     @Override

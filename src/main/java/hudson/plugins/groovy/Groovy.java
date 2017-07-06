@@ -36,6 +36,7 @@ import net.sf.json.JSONObject;
  */
 public class Groovy extends AbstractGroovy {
 
+    private ScriptSource scriptSource;
     private String groovyName;
     private String parameters;
     private String scriptParameters;
@@ -48,7 +49,7 @@ public class Groovy extends AbstractGroovy {
     @DataBoundConstructor
     public Groovy(ScriptSource scriptSource, String groovyName, String parameters,
             String scriptParameters, String properties, String javaOpts, String classPath) {
-        super(scriptSource);
+        this.scriptSource = scriptSource;
         this.groovyName = groovyName;
         this.parameters = parameters;
         this.scriptParameters = scriptParameters;
@@ -172,9 +173,12 @@ public class Groovy extends AbstractGroovy {
         public static hudson.plugins.groovy.GroovyInstallation getGroovy(String groovyName) {
             Jenkins jenkins = Jenkins.getInstance();
             if (jenkins != null) {
-                for( hudson.plugins.groovy.GroovyInstallation i : ((DescriptorImpl) jenkins.getDescriptor(Groovy.class)).getInstallations()) {
-                    if(groovyName!=null && i.getName().equals(groovyName)) {
-                        return i;
+                DescriptorImpl desc = (DescriptorImpl)jenkins.getDescriptor(Groovy.class);
+                if (desc != null) {
+                    for( hudson.plugins.groovy.GroovyInstallation i : desc.getInstallations()) {
+                        if (groovyName != null && i.getName().equals(groovyName)) {
+                            return i;
+                        }
                     }
                 }
             }
@@ -326,11 +330,16 @@ public class Groovy extends AbstractGroovy {
         return args;
     }
 
+    public ScriptSource getScriptSource() {
+        return scriptSource;
+    }
 
+    @Deprecated
     public String getCommand() {
         return command;
     }
 
+    @Deprecated
     public String getScriptFile() {
         return scriptFile;
     }
@@ -339,6 +348,7 @@ public class Groovy extends AbstractGroovy {
         return groovyName;
     }
 
+    @Deprecated
     public BuilderType getType() {
         return type;
     }

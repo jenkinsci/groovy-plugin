@@ -1,29 +1,13 @@
 package hudson.plugins.groovy;
 
 import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Hudson;
-import hudson.util.Secret;
-import hudson.util.VariableResolver;
-import hudson.util.XStream2;
-
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.charset.Charset;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,17 +15,14 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-
-import org.acegisecurity.Authentication;
-import org.codehaus.groovy.control.CompilerConfiguration;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-
-import com.thoughtworks.xstream.XStream;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
 
 /**
  * A Builder which executes system Groovy script in Jenkins JVM (similar to JENKINS_URL/script).
@@ -50,23 +31,25 @@ import javax.annotation.Nonnull;
  */
 public class SystemGroovy extends AbstractGroovy {
 
+    private SystemScriptSource source;
     private String bindings;
-    private String classpath;
-
-    private static final XStream XSTREAM = new XStream2();
 
     @DataBoundConstructor
-    public SystemGroovy(final ScriptSource scriptSource, final String bindings, final String classpath) {
-        super(scriptSource);
-        this.bindings = bindings;
-        this.classpath = classpath;
+    public SystemGroovy(final SystemScriptSource source) {
+        this.source = source;
     }
 
-    /**
-     * @return SystemGroovy as an encrypted String
-     */
-    public String getSecret() {
-        return Secret.fromString(XSTREAM.toXML(this)).getEncryptedValue();
+    @Deprecated
+    public SystemGroovy(final ScriptSource scriptSource, final String bindings, final String classpath) {
+        if (scriptSource instanceof StringScriptSource) {
+            source = new StringSystemScriptSource(new SecureGroovyScript(((StringScriptSource) scriptSource).getCommand(), false, null));
+        } else {
+            source = new FileSystemScriptSource(((FileScriptSource) scriptSource).getScriptFile());
+        }
+        this.bindings = bindings;
+        if (Util.fixEmpty(classpath) != null) {
+            throw new UnsupportedOperationException("classpath no longer supported"); // TODO convert StringScriptSource at least
+        }
     }
 
     @Override
@@ -92,70 +75,33 @@ public class SystemGroovy extends AbstractGroovy {
     }
 
     /*packahge*/ Object run(AbstractBuild<?, ?> build, BuildListener listener, @CheckForNull Launcher launcher) throws IOException, InterruptedException {
-        final List<URL> classPathURLs = new ArrayList<URL>();
-        if (classpath != null) {
-            EnvVars env = build.getEnvironment(listener);
-            env.overrideAll(build.getBuildVariables());
-            VariableResolver<String> vr = new VariableResolver.ByMap<String>(env);
-            classPathURLs.addAll(parseClassPath(classpath, vr));
-        }
-
         Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins == null ) {
+        if (jenkins == null) {
             throw new IllegalStateException("Jenkins instance is null - Jenkins is shutting down?");
         }
-        
-        @Nonnull final ClassLoader cl = jenkins.getPluginManager().uberClassLoader;
-        // normally doPrivileged should be called only when System.getSecurityManager() is not null, but Findbugs still considers 
-        // creating new classloader in else branch as an issues, so calling doPrivileged always (until some better solution is found 
-        // or Finbugs is more clever)
-        URLClassLoader extendedClassLoader = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
-            @Override
-            public URLClassLoader run() {
-                return new URLClassLoader(classPathURLs.toArray(new URL[classPathURLs.size()]), cl);
-            }
-        });
+        @Nonnull ClassLoader cl = jenkins.getPluginManager().uberClassLoader;
         // Use HashMap as a backend for Binding as Hashtable does not accept nulls
         Map<Object, Object> binding = new HashMap<Object, Object>();
         binding.putAll(parseProperties(bindings));
-        GroovyShell shell = new GroovyShell(extendedClassLoader, new Binding(binding));
-
-        shell.setVariable("build", build);
-        if (launcher != null)
-            shell.setVariable("launcher", launcher);
+        binding.put("build", build);
+        if (launcher != null) {
+            binding.put("launcher", launcher);
+        }
         if (listener != null) {
-            shell.setVariable("listener", listener);
-            shell.setVariable("out", listener.getLogger());
+            binding.put("listener", listener);
+            binding.put("out", listener.getLogger());
         }
-
-        InputStream scriptStream = getScriptSource().getScriptStream(build.getWorkspace(), build, listener);
-        return shell.evaluate(new InputStreamReader(scriptStream, Charset.defaultCharset()));
-    }
-
-    private URL pathToURL(String path){
         try {
-            return new URL(path);
-        } catch (MalformedURLException x) {
-            try {
-                return new File(path).toURI().toURL();
-            } catch (MalformedURLException e) {
-                return null;
-            }
+            return source.getSecureGroovyScript(build.getWorkspace(), build, listener).evaluate(cl, new Binding(binding));
+        } catch (IOException x) {
+            throw x;
+        } catch (InterruptedException x) {
+            throw x;
+        } catch (RuntimeException x) {
+            throw x;
+        } catch (Exception x) {
+            throw new IOException(x);
         }
-    }
-
-    private List<URL> parseClassPath(String classPath, VariableResolver<String> vr) {
-        List<URL> cp = new ArrayList<URL>();
-        for (String path : classPath.split("\n")){
-            StringTokenizer tokens = new StringTokenizer(classPath);
-            while(tokens.hasMoreTokens()) {
-                URL url = pathToURL(Util.replaceMacro(tokens.nextToken(),vr));
-                if (url != null){
-                    cp.add(url);
-                }
-            }
-        }
-        return cp;
     }
 
     @Extension
@@ -174,61 +120,62 @@ public class SystemGroovy extends AbstractGroovy {
         @Override
         @SuppressWarnings("rawtypes")
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-            Jenkins jenkins = Jenkins.getInstance();
-            if (jenkins == null ) {
-                throw new IllegalStateException("Jenkins instance is null - Jenkins is shutting down?");
-            }
-            
-            Authentication a = Jenkins.getAuthentication();
-            if (jenkins.getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)) {
-                return true;
-            }
-            return false;
+            return true;
         }
 
-        @Override
-        public SystemGroovy newInstance(StaplerRequest req, JSONObject data) throws FormException {
-            Jenkins jenkins = Jenkins.getInstance();
-            if (jenkins == null ) {
-                throw new IllegalStateException("Jenkins instance is null - Jenkins is shutting down?");
-            }
-            // don't allow unauthorized users to modify scripts
-            Authentication a = Jenkins.getAuthentication();
-            if (jenkins.getACL().hasPermission(a, Jenkins.RUN_SCRIPTS)) {
-                return (SystemGroovy) super.newInstance(req, data);
-            } else {
-                String secret = data.getString("secret");
-                return (SystemGroovy) XSTREAM.fromXML(Secret.decrypt(secret).getPlainText());
-            }
-        }
     }
 
     // ---- Backward compatibility -------- //
 
-    public enum BuilderType {
-        COMMAND, FILE
-    }
+    @Deprecated
+    private transient String command;
+    @Deprecated
+    private transient ScriptSource scriptSource;
+    @Deprecated
+    private transient String classpath;
 
-    private String command;
-
-    private Object readResolve() {
+    @SuppressWarnings("deprecation")
+    private Object readResolve() throws Exception {
         if (command != null) {
-            scriptSource = new StringScriptSource(command);
+            source = new StringSystemScriptSource(new SecureGroovyScript(command, false, null).configuring(ApprovalContext.create()));
             command = null;
+        } else if (scriptSource instanceof StringScriptSource) {
+            List<ClasspathEntry> classpathEntries = new ArrayList<ClasspathEntry>();
+            if (classpath != null) {
+                StringTokenizer tokens = new StringTokenizer(classpath);
+                while (tokens.hasMoreTokens()) {
+                    ClasspathEntry ce = new ClasspathEntry(tokens.nextToken());
+                    if (ce.isClassDirectory()) {
+                        throw new UnsupportedOperationException("directory-based classpath entries not supported in system Groovy script string source");
+                    }
+                    classpathEntries.add(ce);
+                }
+            }
+            source = new StringSystemScriptSource(new SecureGroovyScript(Util.fixNull(((StringScriptSource) scriptSource).getCommand()), false, classpathEntries).configuring(ApprovalContext.create()));
+            scriptSource = null;
+        } else if (scriptSource instanceof FileScriptSource) {
+            if (Util.fixEmpty(classpath) != null) {
+                throw new UnsupportedOperationException("classpath no longer supported in conjunction with system Groovy script file source");
+            } else {
+                source = new FileSystemScriptSource(((FileScriptSource) scriptSource).getScriptFile());
+                scriptSource = null;
+            }
         }
 
         return this;
     }
 
-    public String getCommand() {
-        return command;
+    public SystemScriptSource getSource() {
+        return source;
     }
 
     public String getBindings() {
-        return bindings;
+        return Util.fixEmpty(bindings);
     }
 
-    public String getClasspath() {
-        return classpath;
+    @DataBoundSetter
+    public void setBindings(String bindings) {
+        this.bindings = Util.fixEmpty(bindings);
     }
+
 }
