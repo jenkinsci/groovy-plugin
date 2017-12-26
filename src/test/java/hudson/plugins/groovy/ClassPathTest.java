@@ -1,14 +1,20 @@
 package hudson.plugins.groovy;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import hudson.model.FreeStyleBuild;
 import hudson.model.Result;
 import hudson.model.FreeStyleProject;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -18,7 +24,18 @@ public class ClassPathTest {
     
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
+    @BeforeClass
+    public static void checkGroovyExecutable() throws Exception {
+        try {
+            Process proc = Runtime.getRuntime().exec("groovy -v");
+            int exitCode = proc.waitFor(); // We rely on the test timeout
+            Assume.assumeThat("Groovy is not installed", exitCode, equalTo(0));
+        } catch (IOException ex) {
+            Assume.assumeNoException("Failed to validate the Groovy installation", ex);
+        }
+    }
+
     /**
      * Tests that groovy build step accepts wild cards on class path
      */
@@ -35,8 +52,9 @@ public class ClassPathTest {
         Groovy g = new Groovy(script,"(Default)", "", "","", "", this.getClass().getResource("/lib").getPath() + "/*");
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(g);
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get(10,TimeUnit.SECONDS).getResult());
-        assertTrue(containsString(p.scheduleBuild2(0).get().getLog(100), testJar));
+
+        FreeStyleBuild build = j.buildAndAssertSuccess(p);
+        j.assertLogContains(testJar, build);
     }
     
     @Issue("JENKINS-29577")
@@ -52,19 +70,8 @@ public class ClassPathTest {
         Groovy g = new Groovy(script,"(Default)", "", "","aaa=\"bbb\"", "", this.getClass().getResource("/lib").getPath() + File.separator + testJar);
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(g);
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get(10,TimeUnit.SECONDS).getResult());
-        assertTrue(containsString(p.scheduleBuild2(0).get().getLog(100), "bbb"));
+
+        FreeStyleBuild build = j.buildAndAssertSuccess(p);
+        j.assertLogContains("bbb", build);
     }
-    
-    private boolean containsString(List<String> input, String searchStr) {
-        boolean isPresent = false;
-        for(String str : input) {
-            if(str.contains(searchStr)) {
-                isPresent = true;
-                break;
-            }
-        }
-        return isPresent;
-    }
-    
 }
