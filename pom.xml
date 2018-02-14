@@ -129,6 +129,31 @@
                     <compatibleSinceVersion>2.0</compatibleSinceVersion>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-binary-files</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.codehaus.groovy</groupId>
+                                    <artifactId>groovy-binary</artifactId>
+                                    <version>2.4.13</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

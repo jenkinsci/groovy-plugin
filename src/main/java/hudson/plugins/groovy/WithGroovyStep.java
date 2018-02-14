@@ -1,9 +1,14 @@
 package hudson.plugins.groovy;
 
+import com.google.common.collect.ImmutableSet;
 import groovy.lang.GroovyObject;
+import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.model.Node;
+import hudson.model.TaskListener;
 import hudson.remoting.ClassFilter;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.slaves.WorkspaceList;
@@ -13,7 +18,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -76,7 +80,17 @@ public class WithGroovyStep extends Step {
             base.mkdirs();
             FilePath tmp = base.createTempDir("groovy", "");
             Map<String, String> env = new HashMap<>();
-            // TODO set PATH+GROOVY to $tool.home/bin
+            if (step.tool != null) {
+                GroovyInstallation installation = Groovy.DescriptorImpl.getGroovy(step.tool);
+                if (installation == null) {
+                    throw new AbortException("no such Groovy installation " + step.tool);
+                }
+                // TODO this can block the CPS VM thread:
+                installation = installation.forNode(getContext().get(Node.class), getContext().get(TaskListener.class));
+                installation = installation.forEnvironment(getContext().get(EnvVars.class));
+                String home = installation.getHome();
+                env.put("PATH+GROOVY", tmp.child(home).child("bin").getRemote());
+            }
             // TODO or if tool == null, create wrapper scripts $tmp/{groovy,groovy.bat/startGroovy/startGroovy.bat} and copy groovy.jar from agent
             if (step.input != null) {
                 // TODO remoting calls here are going to be blocking CPS VM thread
@@ -142,7 +156,7 @@ public class WithGroovyStep extends Step {
 
         @Override
         public Set<Class<?>> getRequiredContext() {
-            return Collections.<Class<?>>singleton(FilePath.class);
+            return ImmutableSet.of(FilePath.class, Node.class, EnvVars.class, TaskListener.class);
         }
 
         @Override
