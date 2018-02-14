@@ -90,8 +90,9 @@ public class WithGroovyStep extends Step {
                 installation = installation.forEnvironment(getContext().get(EnvVars.class));
                 String home = installation.getHome();
                 env.put("PATH+GROOVY", tmp.child(home).child("bin").getRemote());
+            } else {
+                // TODO create wrapper scripts $tmp/{groovy,groovy.bat/startGroovy/startGroovy.bat} and copy groovy.jar from agent
             }
-            // TODO or if tool == null, create wrapper scripts $tmp/{groovy,groovy.bat/startGroovy/startGroovy.bat} and copy groovy.jar from agent
             if (step.input != null) {
                 // TODO remoting calls here are going to be blocking CPS VM thread
                 try (OutputStream os = tmp.child("input.ser").write(); ObjectOutputStream oos = new ObjectOutputStream(os)) {

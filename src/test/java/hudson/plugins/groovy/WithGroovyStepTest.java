@@ -42,7 +42,7 @@ public class WithGroovyStepTest {
     public void io() throws Exception {
         WorkflowJob p = r.createProject(WorkflowJob.class, "p");
         r.jenkins.getWorkspaceFor(p).child("calc.groovy").write("Pipeline.output(Pipeline.input().collect {k, v -> k * v})", null);
-        p.setDefinition(new CpsFlowDefinition("node {def r = withGroovy(input: [once: 1, twice: 2, thrice: 3]) {sh 'groovy calc.groovy'}; echo r.join('/')}", true));
+        p.setDefinition(new CpsFlowDefinition("node {def r = withGroovy(input: [once: 1, twice: 2, thrice: 3]) {sh 'env | fgrep PATH; groovy calc.groovy'}; echo r.join('/')}", true));
         r.assertLogContains("once/twicetwice/thricethricethrice", r.buildAndAssertSuccess(p));
     }
 
@@ -52,7 +52,8 @@ public class WithGroovyStepTest {
         home.unzipFrom(WithGroovyStepTest.class.getResourceAsStream("/groovy-binary-2.4.13.zip"));
         r.jenkins.getDescriptorByType(GroovyInstallation.DescriptorImpl.class).setInstallations(new GroovyInstallation("2.4.x", home.child("groovy-2.4.13").getRemote(), null));
         WorkflowJob p = r.createProject(WorkflowJob.class, "p");
-        p.setDefinition(new CpsFlowDefinition("node {writeFile file: 'x.groovy', text: 'println(/running $GroovySystem.version/)'; withGroovy(tool: '2.4.x') {sh 'env | fgrep PATH; groovy x.groovy'}}", true));
+        r.jenkins.getWorkspaceFor(p).child("x.groovy").write("println(/running $GroovySystem.version/)", null);
+        p.setDefinition(new CpsFlowDefinition("node {withGroovy(tool: '2.4.x') {sh 'env | fgrep PATH; groovy x.groovy'}}", true));
         r.assertLogContains("running 2.4.13", r.buildAndAssertSuccess(p));
     }
 
