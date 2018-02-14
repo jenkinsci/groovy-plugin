@@ -11,10 +11,13 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.steps.BodyExecutionCallback;
 import org.jenkinsci.plugins.workflow.steps.EnvironmentExpander;
 import org.jenkinsci.plugins.workflow.steps.Step;
@@ -145,6 +148,10 @@ public class WithGroovyStep extends Step {
         @Override
         public boolean takesImplicitBlockArgument() {
             return true;
+        }
+
+        public Collection<GroovyInstallation> getGroovyInstallations() {
+            return Arrays.asList(Jenkins.getInstance().getDescriptorByType(GroovyInstallation.DescriptorImpl.class).getInstallations());
         }
 
     }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:entry title="${%Groovy Version}">
+        <!-- TODO should be a standard form control for picking a ToolInstallation -->
+        <select class="setting-input" name="groovy.tool">
+            <option value="">${%Default}</option>
+            <j:forEach var="installation" items="${descriptor.groovyInstallations}">
+                <f:option value="${installation.name}" selected="${installation.name == instance.tool}">${installation.name}</f:option>
+            </j:forEach>
+        </select>
+    </f:entry>
+    <f:entry field="input" title="input">
+        <f:description>${%input.blurb}</f:description>
+    </f:entry>
+</j:jelly>
