@@ -12,10 +12,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.CheckForNull;
 import org.jenkinsci.plugins.workflow.steps.BodyExecutionCallback;
+import org.jenkinsci.plugins.workflow.steps.EnvironmentExpander;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
@@ -57,11 +58,6 @@ public class WithGroovyStep extends Step {
         return new Execution(context, this);
     }
 
-    // TODO use 1.652 use WorkspaceList.tempDir
-    private static FilePath tempDir(FilePath ws) {
-        return ws.sibling(ws.getName() + System.getProperty(WorkspaceList.class.getName(), "@") + "tmp");
-    }
-
     private static class Execution extends StepExecution {
 
         private final transient WithGroovyStep step;
@@ -73,20 +69,22 @@ public class WithGroovyStep extends Step {
 
         @Override
         public boolean start() throws Exception {
-            FilePath base = tempDir(getContext().get(FilePath.class));
+            FilePath base = WorkspaceList.tempDir(getContext().get(FilePath.class));
             base.mkdirs();
             FilePath tmp = base.createTempDir("groovy", "");
-            // TODO create wrapper script $tmp/groovy paying attention to tool and JDK
+            Map<String, String> env = new HashMap<>();
+            // TODO set PATH+GROOVY to $tool.home/bin
+            // TODO or if tool == null, create wrapper scripts $tmp/{groovy,groovy.bat/startGroovy/startGroovy.bat} and copy groovy.jar from agent
             if (step.input != null) {
                 // TODO remoting calls here are going to be blocking CPS VM thread
                 try (OutputStream os = tmp.child("input.ser").write(); ObjectOutputStream oos = new ObjectOutputStream(os)) {
                     oos.writeObject(step.input);
                 }
                 tmp.child("Pipeline.groovy").copyFrom(WithGroovyStep.class.getResource("Pipeline.groovy"));
-                // TODO define -Dpipeline.io.dir=$tmp
+                env.put("CLASSPATH+GROOVY", tmp.getRemote());
             }
             getContext().newBodyInvoker().
-                // TODO expand $PATH with tmp
+                withContext(EnvironmentExpander.constant(env)).
                 withCallback(new Callback(tmp)).
                 start();
             return false;
@@ -142,6 +140,11 @@ public class WithGroovyStep extends Step {
         @Override
         public Set<Class<?>> getRequiredContext() {
             return Collections.<Class<?>>singleton(FilePath.class);
+        }
+
+        @Override
+        public boolean takesImplicitBlockArgument() {
+            return true;
         }
 
     }

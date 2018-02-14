@@ -44,4 +44,6 @@ public class WithGroovyStepTest {
         r.assertLogContains("once/twicetwice/thricethricethrice", r.buildAndAssertSuccess(p));
     }
 
+    // TODO use DockerRule and check use of agent default Groovy vs. specific tool
+
 }
