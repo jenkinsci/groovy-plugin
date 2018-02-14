@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.4</version>
+        <version>3.5-20180214.214756-1</version> <!-- TODO https://github.com/jenkinsci/plugin-pom/pull/95 -->
         <relativePath />
     </parent>
 
