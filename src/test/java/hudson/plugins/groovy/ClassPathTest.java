@@ -1,9 +1,9 @@
 package hudson.plugins.groovy;
 
+import hudson.FilePath;
 import hudson.model.FreeStyleProject;
-
 import java.io.File;
-
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -13,6 +13,13 @@ public class ClassPathTest {
     
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Before
+    public void setUpGroovy() throws Exception {
+        FilePath home = j.jenkins.getRootPath();
+        home.unzipFrom(ClassPathTest.class.getResourceAsStream("/groovy-binary-2.4.13.zip"));
+        j.jenkins.getDescriptorByType(GroovyInstallation.DescriptorImpl.class).setInstallations(new GroovyInstallation("2.4.x", home.child("groovy-2.4.13").getRemote(), null));
+    }
     
     /**
      * Tests that groovy build step accepts wild cards on class path
@@ -27,7 +34,7 @@ public class ClassPathTest {
                 + "  if(classLoader.parent) {printCP(classLoader.parent)}\n"
                 + "}\n"
                 + "printCP(this.class.classLoader)");
-        Groovy g = new Groovy(script,"(Default)", "", "","", "", this.getClass().getResource("/lib").getPath() + "/*");
+        Groovy g = new Groovy(script, "2.4.x", "", "", "", "", this.getClass().getResource("/lib").getPath() + "/*");
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(g);
         j.assertLogContains(testJar, j.buildAndAssertSuccess(p));
@@ -43,7 +50,7 @@ public class ClassPathTest {
                 .append("println System.getProperty(\"aaa\")")
                 .toString()
                 );
-        Groovy g = new Groovy(script,"(Default)", "", "","aaa=\"bbb\"", "", this.getClass().getResource("/lib").getPath() + File.separator + testJar);
+        Groovy g = new Groovy(script, "2.4.x", "", "", "aaa=\"bbb\"", "", this.getClass().getResource("/lib").getPath() + File.separator + testJar);
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(g);
         j.assertLogContains("bbb", j.buildAndAssertSuccess(p));
