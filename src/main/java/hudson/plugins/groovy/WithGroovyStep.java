@@ -8,6 +8,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.model.JDK;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
@@ -42,6 +43,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 public class WithGroovyStep extends Step {
 
     private String tool;
+    private String jdk;
     private Object input;
 
     @DataBoundConstructor
@@ -54,6 +56,15 @@ public class WithGroovyStep extends Step {
     @DataBoundSetter
     public void setTool(String tool) {
         this.tool = Util.fixEmpty(tool);
+    }
+
+    public String getJdk() {
+        return jdk;
+    }
+
+    @DataBoundSetter
+    public void setJdk(String jdk) {
+        this.jdk = Util.fixEmpty(jdk);
     }
 
     public Object getInput() {
@@ -103,6 +114,23 @@ public class WithGroovyStep extends Step {
                 bin.child("groovy.bat").copyFrom(WithGroovyStep.class.getResource("groovy.bat"));
                 env.put("PATH+GROOVY", bin.getRemote());
                 env.put("CLASSPATH+GROOVYALL", FindGroovyAllJAR.runIn(tmp.getChannel()));
+            }
+            if (step.jdk != null) {
+                // avoid calling Jenkins.getJDK: https://github.com/jenkinsci/jenkins/pull/3147
+                JDK jdk = null;
+                for (JDK _jdk : Jenkins.getInstance().getDescriptorByType(JDK.DescriptorImpl.class).getInstallations()) {
+                    if (_jdk.getName().equals(step.jdk)) {
+                        jdk = _jdk;
+                        break;
+                    }
+                }
+                if (jdk == null) {
+                    throw new AbortException("no such JDK installation " + step.jdk);
+                }
+                jdk = jdk.forNode(getContext().get(Node.class), getContext().get(TaskListener.class));
+                jdk = jdk.forEnvironment(getContext().get(EnvVars.class));
+                String home = jdk.getHome();
+                env.put("PATH+JDK", tmp.child(home).child("bin").getRemote());
             }
             if (step.input != null) {
                 try (OutputStream os = tmp.child("input.ser").write(); ObjectOutputStream oos = new ObjectOutputStream(os)) {
@@ -197,6 +225,15 @@ public class WithGroovyStep extends Step {
             ListBoxModel m = new ListBoxModel();
             m.add("(Default)", "");
             for (GroovyInstallation inst : Jenkins.getInstance().getDescriptorByType(GroovyInstallation.DescriptorImpl.class).getInstallations()) {
+                m.add(inst.getName());
+            }
+            return m;
+        }
+
+        public ListBoxModel doFillJdkItems() {
+            ListBoxModel m = new ListBoxModel();
+            m.add("(Default)", "");
+            for (JDK inst : Jenkins.getInstance().getDescriptorByType(JDK.DescriptorImpl.class).getInstallations()) {
                 m.add(inst.getName());
             }
             return m;

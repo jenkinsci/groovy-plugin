@@ -4,5 +4,8 @@
     <f:entry field="tool" title="${%Groovy Version}">
         <f:select/>
     </f:entry>
+    <f:entry field="jdk" title="${%Java Version}">
+        <f:select/>
+    </f:entry>
     <f:entry field="input" title="input" description="${%input.blurb}"/>
 </j:jelly>
