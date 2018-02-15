@@ -1,13 +1,8 @@
 package hudson.plugins.groovy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import hudson.model.Result;
 import hudson.model.FreeStyleProject;
 
 import java.io.File;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,8 +30,7 @@ public class ClassPathTest {
         Groovy g = new Groovy(script,"(Default)", "", "","", "", this.getClass().getResource("/lib").getPath() + "/*");
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(g);
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get(10,TimeUnit.SECONDS).getResult());
-        assertTrue(containsString(p.scheduleBuild2(0).get().getLog(100), testJar));
+        j.assertLogContains(testJar, j.buildAndAssertSuccess(p));
     }
     
     @Issue("JENKINS-29577")
@@ -52,19 +46,7 @@ public class ClassPathTest {
         Groovy g = new Groovy(script,"(Default)", "", "","aaa=\"bbb\"", "", this.getClass().getResource("/lib").getPath() + File.separator + testJar);
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(g);
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get(10,TimeUnit.SECONDS).getResult());
-        assertTrue(containsString(p.scheduleBuild2(0).get().getLog(100), "bbb"));
-    }
-    
-    private boolean containsString(List<String> input, String searchStr) {
-        boolean isPresent = false;
-        for(String str : input) {
-            if(str.contains(searchStr)) {
-                isPresent = true;
-                break;
-            }
-        }
-        return isPresent;
+        j.assertLogContains("bbb", j.buildAndAssertSuccess(p));
     }
     
 }
