@@ -2,6 +2,7 @@ package hudson.plugins.groovy;
 
 import com.google.common.collect.ImmutableSet;
 import groovy.lang.GroovyObject;
+import groovy.lang.Writable;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -9,19 +10,23 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import hudson.remoting.Channel;
 import hudson.remoting.ClassFilter;
 import hudson.remoting.ObjectInputStreamEx;
+import hudson.remoting.VirtualChannel;
+import hudson.remoting.Which;
 import hudson.slaves.WorkspaceList;
+import hudson.util.ListBoxModel;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.plugins.workflow.steps.BodyExecutionCallback;
 import org.jenkinsci.plugins.workflow.steps.EnvironmentExpander;
 import org.jenkinsci.plugins.workflow.steps.Step;
@@ -80,21 +85,26 @@ public class WithGroovyStep extends Step {
             base.mkdirs();
             FilePath tmp = base.createTempDir("groovy", "");
             Map<String, String> env = new HashMap<>();
+            // TODO these Remoting calls can block the CPS VM thread; need a SynchronousNonBlockingStepExecution analogue that applies only to the setup phase of a block-scoped step:
             if (step.tool != null) {
                 GroovyInstallation installation = Groovy.DescriptorImpl.getGroovy(step.tool);
                 if (installation == null) {
                     throw new AbortException("no such Groovy installation " + step.tool);
                 }
-                // TODO this can block the CPS VM thread:
                 installation = installation.forNode(getContext().get(Node.class), getContext().get(TaskListener.class));
                 installation = installation.forEnvironment(getContext().get(EnvVars.class));
                 String home = installation.getHome();
                 env.put("PATH+GROOVY", tmp.child(home).child("bin").getRemote());
             } else {
-                // TODO create wrapper scripts $tmp/{groovy,groovy.bat/startGroovy/startGroovy.bat} and copy groovy.jar from agent
+                FilePath bin = tmp.child("bin");
+                FilePath groovySh = bin.child("groovy");
+                groovySh.copyFrom(WithGroovyStep.class.getResource("groovy.sh"));
+                groovySh.chmod(0755);
+                bin.child("groovy.bat").copyFrom(WithGroovyStep.class.getResource("groovy.bat"));
+                env.put("PATH+GROOVY", bin.getRemote());
+                env.put("CLASSPATH+GROOVYALL", FindGroovyAllJAR.runIn(tmp.getChannel()));
             }
             if (step.input != null) {
-                // TODO remoting calls here are going to be blocking CPS VM thread
                 try (OutputStream os = tmp.child("input.ser").write(); ObjectOutputStream oos = new ObjectOutputStream(os)) {
                     oos.writeObject(step.input);
                 }
@@ -106,6 +116,24 @@ public class WithGroovyStep extends Step {
                 withCallback(new Callback(tmp)).
                 start();
             return false;
+        }
+
+        /** Locates {@code groovy-all.jar} on a given node. */
+        private static class FindGroovyAllJAR extends MasterToSlaveCallable<String, IOException> {
+
+            static String runIn(VirtualChannel channel) throws IOException, InterruptedException {
+                // Without the preloadJar call, we would not get back a JAR path, but just a directory containing only groovy/lang/Writable.class.
+                if (channel instanceof Channel) {
+                    ((Channel) channel).preloadJar(WithGroovyStep.class.getClassLoader(), /* arbitrary, but has no other deps to load from agent JVM */ Writable.class);
+                }
+                return channel.call(new FindGroovyAllJAR());
+            }
+
+            @Override
+            public String call() throws IOException {
+                return Which.jarFile(Writable.class).getAbsolutePath();
+            }
+
         }
 
     }
@@ -165,8 +193,13 @@ public class WithGroovyStep extends Step {
             return true;
         }
 
-        public Collection<GroovyInstallation> getGroovyInstallations() {
-            return Arrays.asList(Jenkins.getInstance().getDescriptorByType(GroovyInstallation.DescriptorImpl.class).getInstallations());
+        public ListBoxModel doFillToolItems() {
+            ListBoxModel m = new ListBoxModel();
+            m.add("(Default)", "");
+            for (GroovyInstallation inst : Jenkins.getInstance().getDescriptorByType(GroovyInstallation.DescriptorImpl.class).getInstallations()) {
+                m.add(inst.getName());
+            }
+            return m;
         }
 
     }

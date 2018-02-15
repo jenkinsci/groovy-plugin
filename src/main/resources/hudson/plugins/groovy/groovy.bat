@@ -1,0 +1,1 @@
+java groovy.ui.GroovyMain %*
