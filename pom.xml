@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.5-20180214.214756-1</version> <!-- TODO https://github.com/jenkinsci/plugin-pom/pull/95 -->
+        <version>3.5</version>
         <relativePath />
     </parent>
 
@@ -154,6 +154,7 @@
                         </goals>
                         <configuration>
                             <artifactItems>
+                                <!-- For tests to unpack groovy-binary-2.4.13.zip as a tool installation: -->
                                 <artifactItem>
                                     <groupId>org.codehaus.groovy</groupId>
                                     <artifactId>groovy-binary</artifactId>

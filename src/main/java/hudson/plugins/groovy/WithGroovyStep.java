@@ -94,7 +94,7 @@ public class WithGroovyStep extends Step {
         public boolean start() throws Exception {
             FilePath base = WorkspaceList.tempDir(getContext().get(FilePath.class));
             base.mkdirs();
-            FilePath tmp = base.createTempDir("groovy", "");
+            FilePath tmp = base.createTempDir("jenkins-groovy-step", "");
             Map<String, String> env = new HashMap<>();
             // TODO these Remoting calls can block the CPS VM thread; need a SynchronousNonBlockingStepExecution analogue that applies only to the setup phase of a block-scoped step:
             if (step.tool != null) {
