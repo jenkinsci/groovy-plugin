@@ -184,7 +184,7 @@ public class WithGroovyStep extends Step {
                         return;
                     }
                 }
-            } catch (Exception x) {
+            } catch (Throwable x) {
                 context.onFailure(x);
                 return;
             }
