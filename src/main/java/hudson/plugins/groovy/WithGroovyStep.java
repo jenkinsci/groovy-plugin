@@ -83,6 +83,8 @@ public class WithGroovyStep extends Step {
 
     private static class Execution extends StepExecution {
 
+        private static final long serialVersionUID = 1;
+
         private final transient WithGroovyStep step;
 
         Execution(StepContext context, WithGroovyStep step) {
