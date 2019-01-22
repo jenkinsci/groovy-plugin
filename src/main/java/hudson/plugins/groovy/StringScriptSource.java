@@ -10,6 +10,7 @@ import hudson.util.FormValidation;
 
 import java.io.IOException;
 import org.codehaus.groovy.control.CompilationFailedException;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.GroovySandbox;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -67,7 +68,7 @@ public class StringScriptSource extends ScriptSource {
                 return FormValidation.error("Script seems to be empty string!");
 
             try {
-                new GroovyShell().parse(command);
+                new GroovyShell(GroovySandbox.createSecureCompilerConfiguration()).parse(command);
                 return FormValidation.ok("So far so good");
             } catch (CompilationFailedException e) {
                 return FormValidation.error(e.getMessage());
