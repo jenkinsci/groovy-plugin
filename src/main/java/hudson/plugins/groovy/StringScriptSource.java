@@ -1,6 +1,5 @@
 package hudson.plugins.groovy;
 
-import groovy.lang.GroovyShell;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.BuildListener;
@@ -9,10 +8,10 @@ import hudson.model.Descriptor;
 import hudson.util.FormValidation;
 
 import java.io.IOException;
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.GroovySandbox;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Groovy script specified by command string.
@@ -63,16 +62,12 @@ public class StringScriptSource extends ScriptSource {
             return "Groovy command";
         }
 
+        @RequirePOST
         public FormValidation doCheckScript(@QueryParameter String command) {
             if (command == null || command.trim().isEmpty())
                 return FormValidation.error("Script seems to be empty string!");
 
-            try {
-                new GroovyShell(GroovySandbox.createSecureCompilerConfiguration()).parse(command);
-                return FormValidation.ok("So far so good");
-            } catch (CompilationFailedException e) {
-                return FormValidation.error(e.getMessage());
-            }
+            return GroovySandbox.checkScriptForCompilationErrors(command, null);
         }
     }
 }

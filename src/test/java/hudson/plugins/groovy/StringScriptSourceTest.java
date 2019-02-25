@@ -24,12 +24,14 @@
 
 package hudson.plugins.groovy;
 
+import hudson.util.FormValidation;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
@@ -57,5 +59,18 @@ public class StringScriptSourceTest {
         StringScriptSource.DescriptorImpl d = j.jenkins.getDescriptorByType(StringScriptSource.DescriptorImpl.class);
         assertThat(d.doCheckScript("@Grab(group='foo', module='bar', version='1.0')\ndef foo\n").toString(),
                 containsString("Annotation Grab cannot be used in the sandbox"));
+    }
+
+    @Issue("SECURITY-1338")
+    @Test
+    public void doNotExecuteConstructors() throws Exception {
+        StringScriptSource.DescriptorImpl d = j.jenkins.getDescriptorByType(StringScriptSource.DescriptorImpl.class);
+        assertThat(d.doCheckScript("class DoNotRunConstructor {\n" +
+            "  static void main(String[] args) {}\n" +
+            "  DoNotRunConstructor() {\n" +
+            "    assert jenkins.model.Jenkins.instance.createProject(hudson.model.FreeStyleProject, 'should-not-exist')\n" +
+            "  }\n" +
+            "}\n").kind, equalTo(FormValidation.Kind.OK)); // Compilation ends before the constructor is invoked.
+        assertNull(j.jenkins.getItem("should-not-exist"));
     }
 }
