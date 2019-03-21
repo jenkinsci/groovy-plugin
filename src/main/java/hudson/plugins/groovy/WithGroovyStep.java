@@ -30,6 +30,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.plugins.workflow.steps.BodyExecutionCallback;
 import org.jenkinsci.plugins.workflow.steps.EnvironmentExpander;
+import org.jenkinsci.plugins.workflow.steps.GeneralNonBlockingStepExecution;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
@@ -81,7 +82,7 @@ public class WithGroovyStep extends Step {
         return new Execution(context, this);
     }
 
-    private static class Execution extends StepExecution {
+    private static class Execution extends GeneralNonBlockingStepExecution {
 
         private static final long serialVersionUID = 1;
 
@@ -94,57 +95,58 @@ public class WithGroovyStep extends Step {
 
         @Override
         public boolean start() throws Exception {
-            FilePath base = WorkspaceList.tempDir(getContext().get(FilePath.class));
-            base.mkdirs();
-            FilePath tmp = base.createTempDir("jenkins-groovy-step", "");
-            Map<String, String> env = new HashMap<>();
-            // TODO these Remoting calls can block the CPS VM thread; need a SynchronousNonBlockingStepExecution analogue that applies only to the setup phase of a block-scoped step:
-            if (step.tool != null) {
-                GroovyInstallation installation = Groovy.DescriptorImpl.getGroovy(step.tool);
-                if (installation == null) {
-                    throw new AbortException("no such Groovy installation " + step.tool);
-                }
-                installation = installation.forNode(getContext().get(Node.class), getContext().get(TaskListener.class));
-                installation = installation.forEnvironment(getContext().get(EnvVars.class));
-                String home = installation.getHome();
-                env.put("PATH+GROOVY", tmp.child(home).child("bin").getRemote());
-            } else {
-                FilePath bin = tmp.child("bin");
-                FilePath groovySh = bin.child("groovy");
-                groovySh.copyFrom(WithGroovyStep.class.getResource("groovy.sh"));
-                groovySh.chmod(0755);
-                bin.child("groovy.bat").copyFrom(WithGroovyStep.class.getResource("groovy.bat"));
-                env.put("PATH+GROOVY", bin.getRemote());
-                env.put("CLASSPATH+GROOVYALL", FindGroovyAllJAR.runIn(tmp.getChannel()));
-            }
-            if (step.jdk != null) {
-                // avoid calling Jenkins.getJDK: https://github.com/jenkinsci/jenkins/pull/3147
-                JDK jdk = null;
-                for (JDK _jdk : Jenkins.getInstance().getDescriptorByType(JDK.DescriptorImpl.class).getInstallations()) {
-                    if (_jdk.getName().equals(step.jdk)) {
-                        jdk = _jdk;
-                        break;
+            run(() -> {
+                FilePath base = WorkspaceList.tempDir(getContext().get(FilePath.class));
+                base.mkdirs();
+                FilePath tmp = base.createTempDir("jenkins-groovy-step", "");
+                Map<String, String> env = new HashMap<>();
+                if (step.tool != null) {
+                    GroovyInstallation installation = Groovy.DescriptorImpl.getGroovy(step.tool);
+                    if (installation == null) {
+                        throw new AbortException("no such Groovy installation " + step.tool);
                     }
+                    installation = installation.forNode(getContext().get(Node.class), getContext().get(TaskListener.class));
+                    installation = installation.forEnvironment(getContext().get(EnvVars.class));
+                    String home = installation.getHome();
+                    env.put("PATH+GROOVY", tmp.child(home).child("bin").getRemote());
+                } else {
+                    FilePath bin = tmp.child("bin");
+                    FilePath groovySh = bin.child("groovy");
+                    groovySh.copyFrom(WithGroovyStep.class.getResource("groovy.sh"));
+                    groovySh.chmod(0755);
+                    bin.child("groovy.bat").copyFrom(WithGroovyStep.class.getResource("groovy.bat"));
+                    env.put("PATH+GROOVY", bin.getRemote());
+                    env.put("CLASSPATH+GROOVYALL", FindGroovyAllJAR.runIn(tmp.getChannel()));
                 }
-                if (jdk == null) {
-                    throw new AbortException("no such JDK installation " + step.jdk);
+                if (step.jdk != null) {
+                    // avoid calling Jenkins.getJDK: https://github.com/jenkinsci/jenkins/pull/3147
+                    JDK jdk = null;
+                    for (JDK _jdk : Jenkins.getInstance().getDescriptorByType(JDK.DescriptorImpl.class).getInstallations()) {
+                        if (_jdk.getName().equals(step.jdk)) {
+                            jdk = _jdk;
+                            break;
+                        }
+                    }
+                    if (jdk == null) {
+                        throw new AbortException("no such JDK installation " + step.jdk);
+                    }
+                    jdk = jdk.forNode(getContext().get(Node.class), getContext().get(TaskListener.class));
+                    jdk = jdk.forEnvironment(getContext().get(EnvVars.class));
+                    String home = jdk.getHome();
+                    env.put("PATH+JDK", tmp.child(home).child("bin").getRemote());
                 }
-                jdk = jdk.forNode(getContext().get(Node.class), getContext().get(TaskListener.class));
-                jdk = jdk.forEnvironment(getContext().get(EnvVars.class));
-                String home = jdk.getHome();
-                env.put("PATH+JDK", tmp.child(home).child("bin").getRemote());
-            }
-            if (step.input != null) {
-                try (OutputStream os = tmp.child("input.ser").write(); ObjectOutputStream oos = new ObjectOutputStream(os)) {
-                    oos.writeObject(step.input);
+                if (step.input != null) {
+                    try (OutputStream os = tmp.child("input.ser").write(); ObjectOutputStream oos = new ObjectOutputStream(os)) {
+                        oos.writeObject(step.input);
+                    }
+                    tmp.child("Pipeline.groovy").copyFrom(WithGroovyStep.class.getResource("Pipeline.groovy"));
+                    env.put("CLASSPATH+GROOVY", tmp.getRemote());
                 }
-                tmp.child("Pipeline.groovy").copyFrom(WithGroovyStep.class.getResource("Pipeline.groovy"));
-                env.put("CLASSPATH+GROOVY", tmp.getRemote());
-            }
-            getContext().newBodyInvoker().
-                withContext(EnvironmentExpander.constant(env)).
-                withCallback(new Callback(tmp)).
-                start();
+                getContext().newBodyInvoker().
+                    withContext(EnvironmentExpander.constant(env)).
+                    withCallback(new Callback(tmp)).
+                    start();
+            });
             return false;
         }
 
@@ -166,36 +168,40 @@ public class WithGroovyStep extends Step {
 
         }
 
-    }
+        private class Callback extends BodyExecutionCallback {
 
-    private static class Callback extends BodyExecutionCallback {
+            private static final long serialVersionUID = 1;
 
-        private final String tmp;
+            private final String tmp;
 
-        Callback(FilePath tmp) {
-            this.tmp = tmp.getRemote();
-        }
+            Callback(FilePath tmp) {
+                this.tmp = tmp.getRemote();
+            }
 
-        @Override
-        public void onSuccess(StepContext context, Object result) {
-            try {
-                FilePath ser = context.get(FilePath.class).child(tmp).child("output.ser");
-                if (ser.exists()) {
-                    try (InputStream is = ser.read(); ObjectInputStream ois = new ObjectInputStreamEx(is, GroovyObject.class.getClassLoader(), ClassFilter.DEFAULT)) {
-                        context.onSuccess(ois.readObject());
+            @Override
+            public void onSuccess(final StepContext context, final Object result) {
+                run(() -> {
+                    try {
+                        FilePath ser = context.get(FilePath.class).child(tmp).child("output.ser");
+                        if (ser.exists()) {
+                            try (InputStream is = ser.read(); ObjectInputStream ois = new ObjectInputStreamEx(is, GroovyObject.class.getClassLoader(), ClassFilter.DEFAULT)) {
+                                context.onSuccess(ois.readObject());
+                                return;
+                            }
+                        }
+                    } catch (Throwable x) {
+                        context.onFailure(x);
                         return;
                     }
-                }
-            } catch (Throwable x) {
-                context.onFailure(x);
-                return;
+                    context.onSuccess(result);
+                });
             }
-            context.onSuccess(result);
-        }
 
-        @Override
-        public void onFailure(StepContext context, Throwable t) {
-            context.onFailure(t);
+            @Override
+            public void onFailure(StepContext context, Throwable t) {
+                context.onFailure(t);
+            }
+
         }
 
     }
