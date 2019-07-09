@@ -67,6 +67,14 @@ public class WithGroovyStepTest {
     }
 
     @Test
+    public void ioJep200() throws Exception {
+        WorkflowJob p = r.createProject(WorkflowJob.class, "p");
+        r.jenkins.getWorkspaceFor(p).child("die.groovy").write("@Grab('com.google.guava:guava:11.0.1') import com.google.common.collect.LinkedListMultimap; Pipeline.output(LinkedListMultimap.create())", null);
+        p.setDefinition(new CpsFlowDefinition("node {withGroovy(input: true) {if (isUnix()) {sh 'groovy die.groovy'} else {bat 'groovy die.groovy'}}}", true));
+        r.assertLogContains("java.lang.SecurityException: Rejected: com.google.common.collect.LinkedListMultimap; see https://jenkins.io/redirect/class-filter/", r.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0)));
+    }
+
+    @Test
     public void tool() throws Exception {
         FilePath home = r.jenkins.getRootPath();
         home.unzipFrom(WithGroovyStepTest.class.getResourceAsStream("/groovy-binary-2.4.13.zip"));
@@ -90,6 +98,15 @@ public class WithGroovyStepTest {
         s.getWorkspaceFor(p).child("x.groovy").write("System.exit(23)", null);
         p.setDefinition(new CpsFlowDefinition("node('docker') {withGroovy {sh 'groovy x.groovy'}}", true));
         r.assertLogContains("23", r.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0)));
+    }
+
+    @Test
+    public void builtInGroovyGrab() throws Exception {
+        DumbSlave s = r.createOnlineSlave();
+        WorkflowJob p = r.createProject(WorkflowJob.class, "p");
+        s.getWorkspaceFor(p).child("grape.groovy").write("@Grab('commons-primitives:commons-primitives:1.0') import org.apache.commons.collections.primitives.ArrayIntList; def ls = new ArrayIntList(); ls.add(1); ls.add(2); println(ls)", null);
+        p.setDefinition(new CpsFlowDefinition("node('" + s.getNodeName() + "') {withGroovy {if (isUnix()) {sh 'env | fgrep PATH; groovy grape.groovy'} else {bat 'groovy grape.groovy'}}}", true));
+        r.assertLogContains("[1, 2]", r.buildAndAssertSuccess(p));
     }
 
     @Test

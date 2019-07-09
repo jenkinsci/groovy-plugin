@@ -18,6 +18,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.slaves.WorkspaceList;
 import hudson.util.ListBoxModel;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -26,8 +27,10 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
+import org.apache.ivy.util.extendable.ExtendableItem;
 import org.jenkinsci.plugins.workflow.steps.BodyExecutionCallback;
 import org.jenkinsci.plugins.workflow.steps.EnvironmentExpander;
 import org.jenkinsci.plugins.workflow.steps.GeneralNonBlockingStepExecution;
@@ -116,12 +119,12 @@ public class WithGroovyStep extends Step {
                     groovySh.chmod(0755);
                     bin.child("groovy.bat").copyFrom(WithGroovyStep.class.getResource("groovy.bat"));
                     env.put("PATH+GROOVY", bin.getRemote());
-                    env.put("CLASSPATH+GROOVYALL", FindGroovyAllJAR.runIn(tmp.getChannel()));
+                    env.put("CLASSPATH+GROOVYALL", FindGroovyAllJAR.runIn(tmp.getChannel(), getContext().get(TaskListener.class)));
                 }
                 if (step.jdk != null) {
                     // avoid calling Jenkins.getJDK: https://github.com/jenkinsci/jenkins/pull/3147
                     JDK jdk = null;
-                    for (JDK _jdk : Jenkins.getInstance().getDescriptorByType(JDK.DescriptorImpl.class).getInstallations()) {
+                    for (JDK _jdk : Jenkins.get().getDescriptorByType(JDK.DescriptorImpl.class).getInstallations()) {
                         if (_jdk.getName().equals(step.jdk)) {
                             jdk = _jdk;
                             break;
@@ -153,17 +156,32 @@ public class WithGroovyStep extends Step {
         /** Locates {@code groovy-all.jar} on a given node. */
         private static class FindGroovyAllJAR extends MasterToSlaveCallable<String, IOException> {
 
-            static String runIn(VirtualChannel channel) throws IOException, InterruptedException {
+            private static @CheckForNull Class<?> anIvyClass(@CheckForNull TaskListener listener) {
+                try {
+                    return ExtendableItem.class; // arbitrary but has no deps
+                } catch (NoClassDefFoundError x) {
+                    if (listener != null) {
+                        listener.getLogger().println("@Grab will not be available unless the plugin Pipeline: Shared Groovy Libraries is enabled");
+                    }
+                    return null;
+                }
+            }
+
+            static String runIn(VirtualChannel channel, TaskListener listener) throws IOException, InterruptedException {
+                Class<?> ivy = anIvyClass(listener);
                 // Without the preloadJar call, we would not get back a JAR path, but just a directory containing only groovy/lang/Writable.class.
                 if (channel instanceof Channel) {
-                    ((Channel) channel).preloadJar(WithGroovyStep.class.getClassLoader(), /* arbitrary, but has no other deps to load from agent JVM */ Writable.class);
+                    Class<?> groovy = Writable.class; // arbitrary, but has no other deps to load from agent JVM
+                    Class<?>[] classesInJar = ivy != null ? new Class<?>[] {groovy, ivy} : new Class<?>[] {groovy};
+                    ((Channel) channel).preloadJar(WithGroovyStep.class.getClassLoader(), classesInJar);
                 }
                 return channel.call(new FindGroovyAllJAR());
             }
 
             @Override
             public String call() throws IOException {
-                return Which.jarFile(Writable.class).getAbsolutePath();
+                Class<?> ivy = anIvyClass(null);
+                return Which.jarFile(Writable.class).getAbsolutePath() + (ivy != null ? File.pathSeparator + Which.jarFile(ivy).getAbsolutePath() : "");
             }
 
         }
@@ -232,7 +250,7 @@ public class WithGroovyStep extends Step {
         public ListBoxModel doFillToolItems() {
             ListBoxModel m = new ListBoxModel();
             m.add("(Default)", "");
-            for (GroovyInstallation inst : Jenkins.getInstance().getDescriptorByType(GroovyInstallation.DescriptorImpl.class).getInstallations()) {
+            for (GroovyInstallation inst : Jenkins.get().getDescriptorByType(GroovyInstallation.DescriptorImpl.class).getInstallations()) {
                 m.add(inst.getName());
             }
             return m;
@@ -241,7 +259,7 @@ public class WithGroovyStep extends Step {
         public ListBoxModel doFillJdkItems() {
             ListBoxModel m = new ListBoxModel();
             m.add("(Default)", "");
-            for (JDK inst : Jenkins.getInstance().getDescriptorByType(JDK.DescriptorImpl.class).getInstallations()) {
+            for (JDK inst : Jenkins.get().getDescriptorByType(JDK.DescriptorImpl.class).getInstallations()) {
                 m.add(inst.getName());
             }
             return m;
