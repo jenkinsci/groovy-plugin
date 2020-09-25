@@ -36,6 +36,7 @@ public class ClassPathTest {
                 + "printCP(this.class.classLoader)");
         Groovy g = new Groovy(script, "2.4.x", "", "", "", "", this.getClass().getResource("/lib").getPath() + "/*");
         FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedNode(j.createSlave());
         p.getBuildersList().add(g);
         j.assertLogContains(testJar, j.buildAndAssertSuccess(p));
     }
