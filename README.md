@@ -38,7 +38,7 @@ Jenkins 2.x:
 ![Jenkins 2.x](/docs/images/image2018-9-13_11-52-26.png)
 
 The plugin also adds the functionality of the [Script
-Console](https://wiki.jenkins.io/display/JENKINS/Jenkins+Script+Console)
+Console](https://www.jenkins.io/doc/book/managing/script-console/)
 to the project configuration page.
 
 You can schedule your system management script...
@@ -61,7 +61,7 @@ The system Groovy script on the other hand runs inside the Jenkins
 master's JVM. Thus it will have access to all the internal objects of
 Jenkins, so you can use this to alter the state of Jenkins. It is
 similar to the [Jenkins Script
-Console](https://wiki.jenkins.io/display/JENKINS/Jenkins+Script+Console)
+Console](https://www.jenkins.io/doc/book/managing/script-console/)
 functionality.
 
 ### Security
@@ -79,7 +79,7 @@ section below.
 ### Token macro plugin support
 
 Groovy plugin provides support for  [Token Macro
-Plugin](https://wiki.jenkins.io/display/JENKINS/Token+Macro+Plugin).
+Plugin](https://plugins.jenkins.io/token-macro/).
 Expression is *GROOVY* with parameter *script*:
 
     ${GROOVY,script = "return hudson.model.Hudson.instance.pluginManager.plugins"}
@@ -147,8 +147,7 @@ System.getProperty('FOO')
 ## Usage with pipeline
 
 Currently the plugin does not support pipeline syntax. One workaround
-from [Unknown User
-(alexander\_samoylov)](https://wiki.jenkins.io/display/~alexander_samoylov)
+from Alexander Samoylov
 was mentioned here: <https://stackoverflow.com/a/58381147/4807875>.
 
 #  Changelog
