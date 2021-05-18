@@ -1,5 +1,6 @@
 package hudson.plugins.groovy;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Util;
@@ -34,32 +35,35 @@ public class GroovyInstallation extends ToolInstallation implements EnvironmentS
     /**
      * Gets the executable path of this groovy installation on the given target system.
      */
-    public String getExecutable(VirtualChannel channel) throws IOException, InterruptedException {
-        return channel.call(new MasterToSlaveCallable<String, IOException>() {
-            public String call() throws IOException {
-                File exe = getExeFile("groovy");
-                if (exe.exists()) {
-                    return exe.getPath();
-                }
-                return null;
-            }
-
-            private static final long serialVersionUID = 1L;
-        });
+    public @CheckForNull String getExecutable(VirtualChannel channel) throws IOException, InterruptedException {
+        return channel.call(new GetExecutable(getHome()));
     }
-
-    private File getExeFile(String execName) {
-        String groovyHome = Util.replaceMacro(getHome(),EnvVars.masterEnvVars);
-        File binDir = new File(groovyHome, "bin/");
-        if (File.separatorChar == '\\') {
-            if(new File(binDir, execName + ".exe").exists()) {
-                execName += ".exe";
-            } else {
-                execName += ".bat";
-            }
+    private static class GetExecutable extends MasterToSlaveCallable<String, IOException> {
+        private final String home;
+        GetExecutable(String home) {
+            this.home = home;
         }
-        return new File(binDir, execName);
+        @Override
+        public String call() throws IOException {
+            String execName = "groovy";
+            String groovyHome = Util.replaceMacro(home, EnvVars.masterEnvVars);
+            File binDir = new File(groovyHome, "bin/");
+            if (File.separatorChar == '\\') {
+                if (new File(binDir, execName + ".exe").exists()) {
+                    execName += ".exe";
+                } else {
+                    execName += ".bat";
+                }
+            }
+            File exe = new File(binDir, execName);
+            if (exe.exists()) {
+                return exe.getPath();
+            }
+            return null;
+        }
     }
+
+
 
     public GroovyInstallation forEnvironment(EnvVars environment) {
         return new GroovyInstallation(getName(), environment.expand(getHome()), getProperties().toList());
@@ -105,7 +109,5 @@ public class GroovyInstallation extends ToolInstallation implements EnvironmentS
         }
 
     }
-
-    private static final long serialVersionUID = 1L;
 
 }
