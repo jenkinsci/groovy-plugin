@@ -1,5 +1,6 @@
 package hudson.plugins.groovy;
 
+import hudson.Functions;
 import hudson.cli.CLICommandInvoker;
 import hudson.cli.CreateJobCommand;
 import hudson.diagnosis.OldDataMonitor;
@@ -45,14 +46,16 @@ public class SystemGroovyTest {
     @LocalData
     @Test
     public void upgrade() throws Exception {
-        verifyUpgrade(Groovy.class, new Groovy(new StringScriptSource("println 'hello'"), "(Default)", "", "", "", "-ea", "/tmp/x.jar"), "external", null);
         SystemGroovy sg = new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript("println x", false, null)));
         sg.setBindings("x=33");
         verifyUpgrade(SystemGroovy.class, sg, "string", null);
-        verifyUpgrade(SystemGroovy.class, new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript("true", false, Collections.singletonList(new ClasspathEntry("/tmp/x.jar"))))), "jarcp", null);
-        verifyUpgrade(SystemGroovy.class, null, "dircp", "directory-based classpath entries not supported in system Groovy script string source");
         verifyUpgrade(SystemGroovy.class, new SystemGroovy(new FileSystemScriptSource("x.groovy")), "ws", null);
-        verifyUpgrade(SystemGroovy.class, null, "wscp", "classpath no longer supported in conjunction with system Groovy script file source");
+        if (!Functions.isWindows()) { // test data includes Unix pathnames
+            verifyUpgrade(Groovy.class, new Groovy(new StringScriptSource("println 'hello'"), "(Default)", "", "", "", "-ea", "/tmp/x.jar"), "external", null);
+            verifyUpgrade(SystemGroovy.class, new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript("true", false, Collections.singletonList(new ClasspathEntry("/tmp/x.jar"))))), "jarcp", null);
+            verifyUpgrade(SystemGroovy.class, null, "dircp", "directory-based classpath entries not supported in system Groovy script string source");
+            verifyUpgrade(SystemGroovy.class, null, "wscp", "classpath no longer supported in conjunction with system Groovy script file source");
+        }
     }
     private <T extends Builder> void verifyUpgrade(Class<T> type, T expected, String job, String err) throws Exception {
         FreeStyleProject p = r.jenkins.getItemByFullName(job, FreeStyleProject.class);

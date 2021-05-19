@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:entry field="tool" title="${%Groovy Version}">
+        <f:select/>
+    </f:entry>
+    <f:entry field="jdk" title="${%Java Version}">
+        <f:select/>
+    </f:entry>
+    <f:entry field="input" title="input" description="${%input.blurb}"/>
+</j:jelly>

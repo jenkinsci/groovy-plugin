@@ -1,0 +1,1 @@
+buildPlugin(platforms: ['docker', 'windows'])

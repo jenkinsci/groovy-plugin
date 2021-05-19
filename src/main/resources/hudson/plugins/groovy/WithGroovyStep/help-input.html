@@ -1,0 +1,14 @@
+<p>
+    Allows the Pipeline script to pass structured objects to the external Groovy script and receive structured return values.
+    The values must be <code>Serializable</code> and may only refer to types defined in the Java Platform or Groovy language.
+    If set to any non-null value, the external script may call the following methods:
+</p>
+<dl>
+    <dt><code>Pipeline.input()</code></dt>
+    <dd>Returns the object passed in this parameter.</dd>
+    <dt><code>Pipeline.output(object)</code></dt>
+    <dd>Saves an object to be used as the return value of this step.</dd>
+</dl>
+<p>
+    (If your script passes <code>-cp</code> / <code>-classpath</code>, be sure to append/prepend <code>$CLASSPATH</code> / <code>%CLASSPATH%</code>.)
+</p>
