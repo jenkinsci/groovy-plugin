@@ -112,6 +112,7 @@ public class WithGroovyStep extends Step {
                     installation = installation.forEnvironment(getContext().get(EnvVars.class));
                     String home = installation.getHome();
                     env.put("PATH+GROOVY", tmp.child(home).child("bin").getRemote());
+                    env.put("GROOVY_HOME", tmp.child(home).getRemote());
                 } else {
                     FilePath bin = tmp.child("bin");
                     FilePath groovySh = bin.child("groovy");

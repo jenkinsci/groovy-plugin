@@ -81,7 +81,7 @@ public class WithGroovyStepTest {
         r.jenkins.getDescriptorByType(GroovyInstallation.DescriptorImpl.class).setInstallations(new GroovyInstallation("2.4.x", home.child("groovy-2.4.13").getRemote(), null));
         WorkflowJob p = r.createProject(WorkflowJob.class, "p");
         r.jenkins.getWorkspaceFor(p).child("x.groovy").write("println(/running $GroovySystem.version/)", null);
-        p.setDefinition(new CpsFlowDefinition("node {withGroovy(tool: '2.4.x') {if (isUnix()) {sh 'env | fgrep PATH; groovy x.groovy'} else {bat 'groovy x.groovy'}}}", true));
+        p.setDefinition(new CpsFlowDefinition("node {withGroovy(tool: '2.4.x') {if (isUnix()) {sh 'env | egrep \"PATH|GROOVY\"; groovy x.groovy'} else {bat 'groovy x.groovy'}}}", true));
         r.assertLogContains("running 2.4.13", r.buildAndAssertSuccess(p));
     }
 
