@@ -1,11 +1,16 @@
 package hudson.plugins.groovy;
 
+import com.cloudbees.plugins.credentials.CredentialsScope;
+import com.cloudbees.plugins.credentials.SystemCredentialsProvider;
+import com.cloudbees.plugins.credentials.domains.Domain;
+import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import groovy.lang.GroovySystem;
 import hudson.FilePath;
 import hudson.model.JDK;
 import hudson.model.Result;
 import hudson.plugins.sshslaves.SSHLauncher;
 import hudson.slaves.DumbSlave;
+import java.util.Collections;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.steps.StepConfigTester;
@@ -88,7 +93,9 @@ public class WithGroovyStepTest {
     @Test
     public void builtInGroovy() throws Exception {
         JavaContainer container = javaContainerRule.get();
-        DumbSlave s = new DumbSlave("docker", "/home/test", new SSHLauncher(container.ipBound(22), container.port(22), "test", "test", "", ""));
+
+        SystemCredentialsProvider.getInstance().getDomainCredentialsMap().put(Domain.global(), Collections.singletonList(new UsernamePasswordCredentialsImpl(CredentialsScope.SYSTEM, "test", null, "test", "test")));
+        DumbSlave s = new DumbSlave("docker", "/home/test", new SSHLauncher(container.ipBound(22), container.port(22), "test"));
         r.jenkins.addNode(s);
         r.waitOnline(s);
         WorkflowJob p = r.createProject(WorkflowJob.class, "p");
@@ -112,7 +119,8 @@ public class WithGroovyStepTest {
     @Test
     public void jdk() throws Exception {
         JavaContainerWith9 container = java9ContainerRule.get();
-        DumbSlave s = new DumbSlave("docker", "/home/test", new SSHLauncher(container.ipBound(22), container.port(22), "test", "test", "", ""));
+        SystemCredentialsProvider.getInstance().getDomainCredentialsMap().put(Domain.global(), Collections.singletonList(new UsernamePasswordCredentialsImpl(CredentialsScope.SYSTEM, "test", null, "test", "test")));
+        DumbSlave s = new DumbSlave("docker", "/home/test", new SSHLauncher(container.ipBound(22), container.port(22), "test"));
         r.jenkins.addNode(s);
         r.waitOnline(s);
         WorkflowJob p = r.createProject(WorkflowJob.class, "p");

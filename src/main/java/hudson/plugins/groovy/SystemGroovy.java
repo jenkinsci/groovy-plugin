@@ -18,8 +18,8 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
@@ -79,7 +79,7 @@ public class SystemGroovy extends AbstractGroovy {
         if (jenkins == null) {
             throw new IllegalStateException("Jenkins instance is null - Jenkins is shutting down?");
         }
-        @Nonnull ClassLoader cl = jenkins.getPluginManager().uberClassLoader;
+        @NonNull ClassLoader cl = jenkins.getPluginManager().uberClassLoader;
         // Use HashMap as a backend for Binding as Hashtable does not accept nulls
         Map<Object, Object> binding = new HashMap<Object, Object>();
         binding.putAll(parseProperties(bindings));
