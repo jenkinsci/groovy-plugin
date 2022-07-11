@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Properties;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -71,7 +71,7 @@ public abstract class AbstractGroovy extends Builder {
         }
     }
 
-    public static @Nonnull Properties parseProperties(final String properties) throws IOException {
+    public static @NonNull Properties parseProperties(final String properties) throws IOException {
         Properties props = new Properties();
 
         if (properties != null) {
