@@ -321,6 +321,7 @@ public class Groovy extends AbstractGroovy {
     private String[] parseParams(String line) {
         //JENKINS-24870 CommandLine.getExecutable tries to fix file separators, so if the first param contains slashes, it can cause problems
         //Adding some placeholder instead of executable
+        // TODO perhaps QuotedStringTokenizer.tokenize suffices, so we can drop the commons-exec dep?
         CommandLine cmdLine = CommandLine.parse("executable_placeholder " + line);
         String[] parsedArgs = cmdLine.getArguments();
         String[] args = new String[parsedArgs.length];
