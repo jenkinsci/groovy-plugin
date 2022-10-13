@@ -146,9 +146,7 @@ System.getProperty('FOO')
 
 ## Usage with pipeline
 
-Currently the plugin does not support pipeline syntax. One workaround
-from Alexander Samoylov
-was mentioned here: <https://stackoverflow.com/a/58381147/4807875>.
+`withGroovy` step is introduce to use in the pipeline. See [the corresponding Steps Reference](https://www.jenkins.io/doc/pipeline/steps/groovy/)
 
 #  Changelog
 
