@@ -17,8 +17,8 @@ public class ClassPathTest {
     @Before
     public void setUpGroovy() throws Exception {
         FilePath home = j.jenkins.getRootPath();
-        home.unzipFrom(ClassPathTest.class.getResourceAsStream("/groovy-binary-2.4.13.zip"));
-        j.jenkins.getDescriptorByType(GroovyInstallation.DescriptorImpl.class).setInstallations(new GroovyInstallation("2.4.x", home.child("groovy-2.4.13").getRemote(), null));
+        home.unzipFrom(ClassPathTest.class.getResourceAsStream("/groovy-binary-2.4.21.zip"));
+        j.jenkins.getDescriptorByType(GroovyInstallation.DescriptorImpl.class).setInstallations(new GroovyInstallation("2.4.x", home.child("groovy-2.4.21").getRemote(), null));
     }
     
     /**
@@ -30,7 +30,9 @@ public class ClassPathTest {
         final String testJar = "groovy-cp-test.jar";
         final ScriptSource script = new StringScriptSource(
                 "def printCP(classLoader){\n "
-                + "  classLoader.getURLs().each {println \"$it\"}\n"
+                + "  if (classLoader instanceof java.net.URLClassLoader) {\n"
+                + "    classLoader.getURLs().each {println \"$it\"}\n"
+                + "  }\n"
                 + "  if(classLoader.parent) {printCP(classLoader.parent)}\n"
                 + "}\n"
                 + "printCP(this.class.classLoader)");

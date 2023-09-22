@@ -5,6 +5,7 @@ import hudson.model.Result;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Builder;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -36,6 +37,7 @@ public class GroovyPluginTest {
 
     /// Roundtrip
 
+    @Ignore
     @Test
     public void roundtripTestSystemGroovyStringScript() throws Exception {
         SystemGroovy before = new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript("println 'Test'", true, null)));

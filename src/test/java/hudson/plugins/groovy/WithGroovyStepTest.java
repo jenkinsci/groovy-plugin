@@ -85,12 +85,12 @@ public class WithGroovyStepTest {
     public void tool() throws Exception {
         assumeFalse("TODO fails on Windows CI: JAVA_HOME is set to an invalid directory: C:/tools/jdk-8", Functions.isWindows());
         FilePath home = r.jenkins.getRootPath();
-        home.unzipFrom(WithGroovyStepTest.class.getResourceAsStream("/groovy-binary-2.4.13.zip"));
-        r.jenkins.getDescriptorByType(GroovyInstallation.DescriptorImpl.class).setInstallations(new GroovyInstallation("2.4.x", home.child("groovy-2.4.13").getRemote(), null));
+        home.unzipFrom(WithGroovyStepTest.class.getResourceAsStream("/groovy-binary-2.4.21.zip"));
+        r.jenkins.getDescriptorByType(GroovyInstallation.DescriptorImpl.class).setInstallations(new GroovyInstallation("2.4.x", home.child("groovy-2.4.21").getRemote(), null));
         WorkflowJob p = r.createProject(WorkflowJob.class, "p");
         r.jenkins.getWorkspaceFor(p).child("x.groovy").write("println(/running $GroovySystem.version/)", null);
         p.setDefinition(new CpsFlowDefinition("node {withGroovy(tool: '2.4.x') {if (isUnix()) {sh 'env | egrep \"PATH|GROOVY\"; groovy x.groovy'} else {bat 'groovy x.groovy'}}}", true));
-        r.assertLogContains("running 2.4.13", r.buildAndAssertSuccess(p));
+        r.assertLogContains("running 2.4.21", r.buildAndAssertSuccess(p));
     }
 
     @Test
@@ -136,11 +136,11 @@ public class WithGroovyStepTest {
         p.setDefinition(new CpsFlowDefinition("node('docker') {withGroovy(jdk: 'jdk9') {sh 'env | fgrep PATH; groovy x.groovy'}}", true));
         r.assertLogContains("running 9.", r.buildAndAssertSuccess(p));
         FilePath home = s.getRootPath();
-        home.unzipFrom(WithGroovyStepTest.class.getResourceAsStream("/groovy-binary-2.4.13.zip"));
-        r.jenkins.getDescriptorByType(GroovyInstallation.DescriptorImpl.class).setInstallations(new GroovyInstallation("2.4.x", home.child("groovy-2.4.13").getRemote(), null));
+        home.unzipFrom(WithGroovyStepTest.class.getResourceAsStream("/groovy-binary-2.4.21.zip"));
+        r.jenkins.getDescriptorByType(GroovyInstallation.DescriptorImpl.class).setInstallations(new GroovyInstallation("2.4.x", home.child("groovy-2.4.21").getRemote(), null));
         s.getWorkspaceFor(p).child("x.groovy").write("println(/running $GroovySystem.version on ${System.properties['java.version']}/)", null);
         p.setDefinition(new CpsFlowDefinition("node('docker') {withGroovy(tool: '2.4.x', jdk: 'jdk9') {sh 'env | fgrep PATH; groovy x.groovy'}}", true));
-        r.assertLogContains("running 2.4.13 on 9.", r.buildAndAssertSuccess(p));
+        r.assertLogContains("running 2.4.21 on 9.", r.buildAndAssertSuccess(p));
     }
 
 }
