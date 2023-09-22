@@ -35,9 +35,6 @@ public class WithGroovyStepTest {
     @Rule
     public DockerRule<JavaContainer> javaContainerRule = new DockerRule<>(JavaContainer.class);
 
-    @Rule
-    public DockerRule<JavaContainerWith9> java9ContainerRule = new DockerRule<>(JavaContainerWith9.class);
-
     @Test
     public void smokes() throws Exception {
         DumbSlave s = r.createSlave("remote", null, null);
@@ -60,8 +57,8 @@ public class WithGroovyStepTest {
         r.assertEqualDataBoundBeans(step, tester.configRoundTrip(step));
         step.setTool("groovy3");
         r.assertEqualDataBoundBeans(step, tester.configRoundTrip(step));
-        r.jenkins.getDescriptorByType(JDK.DescriptorImpl.class).setInstallations(new JDK("jdk9", "/usr/share/jdk9"));
-        step.setJdk("jdk9");
+        r.jenkins.getDescriptorByType(JDK.DescriptorImpl.class).setInstallations(new JDK("jdk11", "/usr/lib/jvm/java-11-openjdk-amd64"));
+        step.setJdk("jdk11");
         r.assertEqualDataBoundBeans(step, tester.configRoundTrip(step));
     }
 
@@ -123,7 +120,7 @@ public class WithGroovyStepTest {
     @Test
     public void jdk() throws Exception {
         assumeFalse("needs Linux Docker", Functions.isWindows());
-        JavaContainerWith9 container = java9ContainerRule.get();
+        JavaContainer container = javaContainerRule.get();
         SystemCredentialsProvider.getInstance().getDomainCredentialsMap().put(Domain.global(), Collections.singletonList(new UsernamePasswordCredentialsImpl(CredentialsScope.SYSTEM, "test", null, "test", "test")));
         DumbSlave s = new DumbSlave("docker", "/home/test", new SSHLauncher(container.ipBound(22), container.port(22), "test"));
         r.jenkins.addNode(s);
@@ -131,16 +128,16 @@ public class WithGroovyStepTest {
         WorkflowJob p = r.createProject(WorkflowJob.class, "p");
         s.getWorkspaceFor(p).child("x.groovy").write("println(/running ${System.properties['java.version']}/)", null);
         p.setDefinition(new CpsFlowDefinition("node('docker') {withGroovy {sh 'env | fgrep PATH; groovy x.groovy'}}", true));
-        r.assertLogContains("running 1.8.", r.buildAndAssertSuccess(p));
-        r.jenkins.getDescriptorByType(JDK.DescriptorImpl.class).setInstallations(new JDK("jdk9", "/opt/jdk9"));
-        p.setDefinition(new CpsFlowDefinition("node('docker') {withGroovy(jdk: 'jdk9') {sh 'env | fgrep PATH; groovy x.groovy'}}", true));
-        r.assertLogContains("running 9.", r.buildAndAssertSuccess(p));
+        r.assertLogContains("running 11.", r.buildAndAssertSuccess(p));
+        r.jenkins.getDescriptorByType(JDK.DescriptorImpl.class).setInstallations(new JDK("jdk11", "/usr/lib/jvm/java-11-openjdk-amd64"));
+        p.setDefinition(new CpsFlowDefinition("node('docker') {withGroovy(jdk: 'jdk11') {sh 'env | fgrep PATH; groovy x.groovy'}}", true));
+        r.assertLogContains("running 11.", r.buildAndAssertSuccess(p));
         FilePath home = s.getRootPath();
         home.unzipFrom(WithGroovyStepTest.class.getResourceAsStream("/groovy-binary-2.4.21.zip"));
         r.jenkins.getDescriptorByType(GroovyInstallation.DescriptorImpl.class).setInstallations(new GroovyInstallation("2.4.x", home.child("groovy-2.4.21").getRemote(), null));
         s.getWorkspaceFor(p).child("x.groovy").write("println(/running $GroovySystem.version on ${System.properties['java.version']}/)", null);
-        p.setDefinition(new CpsFlowDefinition("node('docker') {withGroovy(tool: '2.4.x', jdk: 'jdk9') {sh 'env | fgrep PATH; groovy x.groovy'}}", true));
-        r.assertLogContains("running 2.4.21 on 9.", r.buildAndAssertSuccess(p));
+        p.setDefinition(new CpsFlowDefinition("node('docker') {withGroovy(tool: '2.4.x', jdk: 'jdk11') {sh 'env | fgrep PATH; groovy x.groovy'}}", true));
+        r.assertLogContains("running 2.4.21 on 11.", r.buildAndAssertSuccess(p));
     }
 
 }

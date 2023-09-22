@@ -96,7 +96,7 @@
         <dependency>
             <groupId>org.jenkins-ci.test</groupId>
             <artifactId>docker-fixtures</artifactId>
-            <version>1.8</version>
+            <version>178.v2c7d2343886b_</version>
             <scope>test</scope>
         </dependency>
         <dependency>
