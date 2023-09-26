@@ -3,7 +3,7 @@
          
   <f:entry field="command">
     <f:textarea checkMethod="post" codemirror-mode="clike" 
-    codemirror-config="mode: 'text/x-groovy', lineNumbers: true, matchBrackets: true, onBlur: function(editor){editor.save()}"/>
+    codemirror-config='"mode": "text/x-groovy", "lineNumbers": true, "matchBrackets": true'/>
   </f:entry>
   <f:validateButton title="Check syntax" progress="Checking syntax ... " method="checkScript" with="command"/>
 
