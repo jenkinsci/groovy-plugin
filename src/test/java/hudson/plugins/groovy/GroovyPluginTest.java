@@ -89,6 +89,7 @@ public class GroovyPluginTest {
         p.getBuildersList().add(before);
 
         j.submit(j.createWebClient().getPage(p,"configure").getFormByName("config"));
+        p.doReload(); // Workaround to drop transient properties in Script Security 1172.v35f6a_0b_8207e+
         T after = p.getBuildersList().get(clazz);
         return after;
     }
