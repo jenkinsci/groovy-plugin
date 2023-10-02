@@ -1,15 +1,23 @@
 package hudson.plugins.groovy;
 
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.model.FreeStyleProject;
 import java.io.File;
+import static org.junit.Assume.assumeFalse;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class ClassPathTest {
+
+    @BeforeClass
+    public static void linux() {
+        assumeFalse("TODO on CI (but not locally in Windows 10 on Java 19): find.exe is not recognized as an internal or external command…", Functions.isWindows());
+    }
     
     @Rule
     public JenkinsRule j = new JenkinsRule();
