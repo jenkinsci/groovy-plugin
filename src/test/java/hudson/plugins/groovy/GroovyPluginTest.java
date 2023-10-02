@@ -5,7 +5,6 @@ import hudson.model.Result;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Builder;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -37,7 +36,6 @@ public class GroovyPluginTest {
 
     /// Roundtrip
 
-    @Ignore
     @Test
     public void roundtripTestSystemGroovyStringScript() throws Exception {
         SystemGroovy before = new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript("println 'Test'", true, null)));
@@ -91,6 +89,7 @@ public class GroovyPluginTest {
         p.getBuildersList().add(before);
 
         j.submit(j.createWebClient().getPage(p,"configure").getFormByName("config"));
+        p.doReload(); // Workaround to drop transient properties in Script Security 1172.v35f6a_0b_8207e+
         T after = p.getBuildersList().get(clazz);
         return after;
     }
