@@ -4,6 +4,9 @@ updates:
   directory: /
   schedule:
     interval: monthly
+  ignore:
+  # Several tests expect an exact version:
+  - dependency-name: org.codehaus.groovy:groovy-binary
 - package-ecosystem: github-actions
   directory: /
   schedule:
