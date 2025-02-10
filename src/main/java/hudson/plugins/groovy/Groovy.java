@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import hudson.CopyOnWrite;
 import hudson.EnvVars;
@@ -196,7 +196,7 @@ public class Groovy extends AbstractGroovy {
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
+        public boolean configure(StaplerRequest2 req, JSONObject json) throws hudson.model.Descriptor.FormException {
             allowMacro = json.getBoolean("allowMacro");
             save();
             return true;

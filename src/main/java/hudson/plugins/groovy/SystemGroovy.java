@@ -7,6 +7,7 @@ import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Descriptor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +43,11 @@ public class SystemGroovy extends AbstractGroovy {
     @Deprecated
     public SystemGroovy(final ScriptSource scriptSource, final String bindings, final String classpath) {
         if (scriptSource instanceof StringScriptSource) {
-            source = new StringSystemScriptSource(new SecureGroovyScript(((StringScriptSource) scriptSource).getCommand(), false, null));
+            try {
+                source = new StringSystemScriptSource(new SecureGroovyScript(((StringScriptSource) scriptSource).getCommand(), false, null));
+            } catch (Descriptor.FormException e) {
+                throw new RuntimeException(e);
+            }
         } else {
             source = new FileSystemScriptSource(((FileScriptSource) scriptSource).getScriptFile());
         }

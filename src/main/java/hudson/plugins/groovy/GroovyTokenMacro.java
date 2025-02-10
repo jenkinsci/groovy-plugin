@@ -25,6 +25,7 @@ package hudson.plugins.groovy;
 
 import hudson.Extension;
 import hudson.model.BuildListener;
+import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 import hudson.model.AbstractBuild;
@@ -64,7 +65,12 @@ public class GroovyTokenMacro extends DataBoundTokenMacro {
 	    Groovy.DescriptorImpl decs = (Groovy.DescriptorImpl) jenkins.getDescriptorOrDie(Groovy.class);
 
 		if (decs.getAllowMacro()) {
-			SystemGroovy systemGroovy = new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript(script, true, null)));
+			SystemGroovy systemGroovy;
+			try {
+				systemGroovy = new SystemGroovy(new StringSystemScriptSource(new SecureGroovyScript(script, true, null)));
+			} catch (Descriptor.FormException e) {
+				throw new RuntimeException(e);
+			}
 			Object output = systemGroovy.run(context, (BuildListener) listener, null);
 			
 			return output != null ? output.toString() : "";

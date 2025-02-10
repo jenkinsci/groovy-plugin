@@ -29,7 +29,11 @@ public class FileSystemScriptSource extends SystemScriptSource {
         EnvVars env = build.getEnvironment(listener);
         String expandedScriptFile = env.expand(this.scriptFile);
         String text = new FilePath(projectWorkspace, expandedScriptFile).readToString();
-        return new SecureGroovyScript(text, true, null).configuring(ApprovalContext.create()/* unused but just in case: */.withItem(build.getParent()));
+        try {
+            return new SecureGroovyScript(text, true, null).configuring(ApprovalContext.create()/* unused but just in case: */.withItem(build.getParent()));
+        } catch (Descriptor.FormException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Extension
