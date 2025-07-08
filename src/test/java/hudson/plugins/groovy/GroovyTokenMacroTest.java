@@ -23,29 +23,36 @@
  */
 package hudson.plugins.groovy;
 
-import org.htmlunit.html.HtmlCheckBoxInput;
-import org.htmlunit.html.HtmlPage;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
+import org.htmlunit.html.HtmlCheckBoxInput;
+import org.htmlunit.html.HtmlPage;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class GroovyTokenMacroTest {
+@WithJenkins
+class GroovyTokenMacroTest {
 
     public static final String TEST_SCRIPT = "${GROOVY,script = \"return 6 * 7\"}";
 
-    public @Rule JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     private void allowTokenMacro() throws Exception {
         HtmlPage page = j.createWebClient().goTo("configure");
@@ -57,7 +64,7 @@ public class GroovyTokenMacroTest {
     }
 
     @Test
-    public void expand() throws Exception {
+    void expand() throws Exception {
         allowTokenMacro();
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new MacroTestBuilder("42", TEST_SCRIPT));
@@ -66,7 +73,7 @@ public class GroovyTokenMacroTest {
     }
 
     @Test
-    public void ignoreExpansionWhenNotAllowed() throws Exception {
+    void ignoreExpansionWhenNotAllowed() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new MacroTestBuilder("return 6 * 7", TEST_SCRIPT));
 

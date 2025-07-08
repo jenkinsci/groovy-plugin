@@ -2,27 +2,28 @@ package hudson.plugins.groovy;
 
 import hudson.model.FreeStyleProject;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.Rule;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class FileSystemScriptSourceTest {
+@WithJenkins
+class FileSystemScriptSourceTest {
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
+    private JenkinsRule j;
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void smokes() throws Exception {
-        FreeStyleProject p = r.createFreeStyleProject("p");
+    void smokes() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("p");
         ScriptApproval.get().approveSignature("method java.io.PrintStream println java.lang.String"); // TODO add methods like this or `method groovy.lang.Script println java.lang.Object` to generic-whitelist
-        r.jenkins.getWorkspaceFor(p).child("x.groovy").write("out.println('ran OK')", null);
+        j.jenkins.getWorkspaceFor(p).child("x.groovy").write("out.println('ran OK')", null);
         p.getBuildersList().add(new SystemGroovy(new FileSystemScriptSource("x.groovy")));
-        r.assertLogContains("ran OK", r.buildAndAssertSuccess(p));
+        j.assertLogContains("ran OK", j.buildAndAssertSuccess(p));
     }
 
 }
