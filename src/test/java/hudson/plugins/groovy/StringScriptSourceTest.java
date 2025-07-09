@@ -25,37 +25,46 @@
 package hudson.plugins.groovy;
 
 import hudson.util.FormValidation;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class StringScriptSourceTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class StringScriptSourceTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("SECURITY-1293")
     @Test
-    public void blockASTTest() throws Exception {
+    void blockASTTest() {
         StringScriptSource.DescriptorImpl d = j.jenkins.getDescriptorByType(StringScriptSource.DescriptorImpl.class);
-        assertThat(d.doCheckScript("import groovy.transform.*\n" +
-                "import jenkins.model.Jenkins\n" +
-                "import hudson.model.FreeStyleProject\n" +
-                "@ASTTest(value={ assert Jenkins.getInstance().createProject(FreeStyleProject.class, \"should-not-exist\") })\n" +
-                "@Field int x\n" +
-                "echo 'hello'\n").toString(), containsString("Annotation ASTTest cannot be used in the sandbox"));
+        assertThat(d.doCheckScript("""
+                import groovy.transform.*
+                import jenkins.model.Jenkins
+                import hudson.model.FreeStyleProject
+                @ASTTest(value={ assert Jenkins.getInstance().createProject(FreeStyleProject.class, "should-not-exist") })
+                @Field int x
+                echo 'hello'
+                """).toString(), containsString("Annotation ASTTest cannot be used in the sandbox"));
 
         assertNull(j.jenkins.getItem("should-not-exist"));
     }
 
     @Issue("SECURITY-1293")
     @Test
-    public void blockGrab() throws Exception {
+    void blockGrab() {
         StringScriptSource.DescriptorImpl d = j.jenkins.getDescriptorByType(StringScriptSource.DescriptorImpl.class);
         assertThat(d.doCheckScript("@Grab(group='foo', module='bar', version='1.0')\ndef foo\n").toString(),
                 containsString("Annotation Grab cannot be used in the sandbox"));
@@ -63,14 +72,16 @@ public class StringScriptSourceTest {
 
     @Issue("SECURITY-1338")
     @Test
-    public void doNotExecuteConstructors() throws Exception {
+    void doNotExecuteConstructors() {
         StringScriptSource.DescriptorImpl d = j.jenkins.getDescriptorByType(StringScriptSource.DescriptorImpl.class);
-        assertThat(d.doCheckScript("class DoNotRunConstructor {\n" +
-            "  static void main(String[] args) {}\n" +
-            "  DoNotRunConstructor() {\n" +
-            "    assert jenkins.model.Jenkins.instance.createProject(hudson.model.FreeStyleProject, 'should-not-exist')\n" +
-            "  }\n" +
-            "}\n").kind, equalTo(FormValidation.Kind.OK)); // Compilation ends before the constructor is invoked.
+        assertThat(d.doCheckScript("""
+                class DoNotRunConstructor {
+                  static void main(String[] args) {}
+                  DoNotRunConstructor() {
+                    assert jenkins.model.Jenkins.instance.createProject(hudson.model.FreeStyleProject, 'should-not-exist')
+                  }
+                }
+                """).kind, equalTo(FormValidation.Kind.OK)); // Compilation ends before the constructor is invoked.
         assertNull(j.jenkins.getItem("should-not-exist"));
     }
 }

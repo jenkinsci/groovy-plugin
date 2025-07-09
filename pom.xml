@@ -96,9 +96,9 @@
             <artifactId>structs</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jenkins-ci.test</groupId>
-            <artifactId>docker-fixtures</artifactId>
-            <version>200.v22a_e8766731c</version>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>1.21.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
