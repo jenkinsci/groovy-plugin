@@ -9,7 +9,7 @@ import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 import org.apache.commons.exec.CommandLine;
-import org.apache.commons.lang.StringUtils;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest2;
 
@@ -265,7 +265,7 @@ public class Groovy extends AbstractGroovy {
         list.add(cmd);
 
         //Add class path
-        if(StringUtils.isNotBlank(classPath)) {
+        if (classPath != null && !classPath.isBlank()) {
             String pathSeparator = isOnUnix ? ":" : ";";
             StringTokenizer tokens = new StringTokenizer(classPath);
             list.add("-cp");
@@ -280,14 +280,14 @@ public class Groovy extends AbstractGroovy {
         }
         
         //Add java properties
-        if(StringUtils.isNotBlank(properties)) {
+        if (properties != null && !properties.isBlank()) {
             for (Entry<Object, Object> entry : parseProperties(properties).entrySet()) {
                 list.add("-D" + entry.getKey() + "=" + entry.getValue());
             }
         }
 
         //Add groovy parameters
-        if(StringUtils.isNotBlank(parameters)) {
+        if (parameters != null && !parameters.isBlank()) {
             String[] args = parseParams(parameters);
             for(String arg : args) {
                 list.add(Util.replaceMacro(arg, vr));
@@ -296,7 +296,7 @@ public class Groovy extends AbstractGroovy {
         list.add(script.getRemote());
 
         //Add script parameters
-        if(StringUtils.isNotBlank(scriptParameters)) {
+        if (scriptParameters != null && !scriptParameters.isBlank()) {
             String[] params = parseParams(scriptParameters);
             ParametersAction parameters = build.getAction(ParametersAction.class);
             for(String param : params) {
