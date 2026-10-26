@@ -100,6 +100,9 @@ public class WithGroovyStep extends Step {
         public boolean start() throws Exception {
             run(() -> {
                 FilePath base = WorkspaceList.tempDir(getContext().get(FilePath.class));
+                if (base == null) {
+                    throw new IOException("node offline");
+                }
                 base.mkdirs();
                 FilePath tmp = base.createTempDir("jenkins-groovy-step", "");
                 Map<String, String> env = new HashMap<>();
